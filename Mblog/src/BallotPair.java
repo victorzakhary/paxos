@@ -9,6 +9,11 @@ public class BallotPair implements Comparable<BallotPair>{
 		this.ballotNum = ballotNum;
 		this.processId = processId;
 	}
+	public BallotPair()
+	{
+		this.ballotNum = 0;
+		this.processId = 0;
+	}
 	@Override
 	public int compareTo(BallotPair arg0) {
 		if(this.ballotNum != arg0.ballotNum){

@@ -10,16 +10,19 @@ import java.util.Collections;
 public class Replica {
 
 	int replicaId;
-	ArrayList<Paxos> paxosEntries;
+	ArrayList<Paxos> activePaxosEntries;
 	String logFilePath;
 	String configFilePath;
+	String indexFilePath;
 	ArrayList<ReplicaCommInfo> replicas;
+	int logIndex;
 	public Replica(int replicaId, String logFilePath,String configFilePath)
 	{
-		this.replicaId =replicaId;
+		// replica ID will be read from the first line in the configuration file
 		this.logFilePath = logFilePath;
 		this.configFilePath = configFilePath;
 		replicas = new ArrayList<ReplicaCommInfo>(10);
+		logIndex = -1;
 		readConfiguration();
 		startInstance();
 	}
@@ -28,8 +31,11 @@ public class Replica {
 		Charset charset = Charset.forName("US-ASCII");
 		try (BufferedReader reader = Files.newBufferedReader(FileSystems.getDefault().getPath(configFilePath), charset)) {
 		    String line = null;
+		    
+		    line = reader.readLine();
+		    this.replicaId = Integer.parseInt(line.trim());
 		    while ((line = reader.readLine()) != null) {
-		        paxosEntries.add(new Paxos(line));
+		        replicas.add(new ReplicaCommInfo(line));
 		    }
 		} catch (IOException x) {
 		    System.err.format("IOException: %s%n", x);
