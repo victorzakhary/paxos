@@ -7,3 +7,8 @@
 /AcceptedBallotNumAndValue.class
 /Logging.class
 /MessageCommunication.class
+/Receiver.class
+/MessageHandler.class
+/Replica$1.class
+/Replica$2.class
+/Replica$3.class

@@ -11,7 +11,7 @@ public class ReplicaCommInfo implements Comparable<ReplicaCommInfo>{
 	{
 		String cofigurationParts [] = configurationLine.split(" ");
 		this.replicaId = Integer.parseInt(cofigurationParts[0]);
-		this.socketId = Integer.parseInt(cofigurationParts[2]);
+		this.socketId= Integer.parseInt(cofigurationParts[2]);
 		try {
 			this.replicaIP = InetAddress.getByName(cofigurationParts[1]);
 		} catch (UnknownHostException e) {
