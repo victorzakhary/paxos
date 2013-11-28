@@ -26,6 +26,7 @@ public class Replica {
 	int logIndex;
 	boolean isFailed;
 	Queue<MessageHandler> clientMessages;
+	
 	public Replica(int replicaId, String logFilePath,String configFilePath)
 	{
 		// replica ID will be read from the first line in the configuration file
@@ -81,7 +82,6 @@ public class Replica {
                  BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                  String clientMessage = inFromClient.readLine();
                  MessageHandler handler = new MessageHandler(this, clientMessage, connectionSocket);
-                 handler.start();
            }
         }
         catch(IOException e)
