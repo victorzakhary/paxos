@@ -13,6 +13,7 @@ public class CommandHandler extends Thread {
 	
 	private BufferedReader in;
 	private DataOutputStream out;
+	Socket clientSocket;
 
 	public CommandHandler(String command) {
 		this.command = command;
@@ -22,6 +23,7 @@ public class CommandHandler extends Thread {
 	public void run() {
 		handleCommand(command);
 	}
+	
 
 	// post, read, fail and unfail
 	private void handleCommand(String command) {
@@ -30,27 +32,26 @@ public class CommandHandler extends Thread {
 		if (lowerCaseCommand.startsWith("post")) {
 			String [] commandParts = command.split("\\(");
 			commandParts[1] = commandParts[1].replace(")","").trim().replace("\"", "");
-			post(commandParts[1]);
+			sendToServer("post|" + commandParts[1]);
 		} else if (lowerCaseCommand.startsWith("read")) {
-			read();
+			sendToServer("read");
 		} else if (lowerCaseCommand.startsWith("fail")) {
-			fail();
+			sendToServer("fail");
 		} else if (lowerCaseCommand.startsWith("unfail")) {
-			unfail();
+			sendToServer("unfail");
 		}
 	}
-	private boolean post (String tweet)
+	
+	private void sendToServer (String message)
 	{
-		System.out.println(tweet);
-		Socket clientSocket;
 		try {
-	        String modifiedSentence;
-	        clientSocket = new Socket("localhost", 9999);
+	        String replyFromServer;
+	        clientSocket = new Socket("localhost", 5000);
 	        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-	        outToServer.writeBytes(tweet+"\n");
-	        modifiedSentence = inFromServer.readLine();
-	        System.out.println(modifiedSentence);
+	        outToServer.writeBytes(message + "\n");
+	        replyFromServer = inFromServer.readLine();
+	        System.out.println(replyFromServer);
 	        clientSocket.close();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -59,24 +60,5 @@ public class CommandHandler extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		finally
-		{
-			return false;
-		}
 	}
-	private String read ()
-	{
-		return "";
-	}
-	private void fail ()
-	{
-		
-	}
-	private void unfail ()
-	{
-		
-	}
-	
-	
-
 }

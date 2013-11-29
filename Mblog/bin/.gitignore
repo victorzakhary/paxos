@@ -13,3 +13,8 @@
 /Replica$2.class
 /Replica$3.class
 /Message.class
+/ClientReceiver.class
+/ClientMessageDetails.class
+/ServerMessage.class
+/InterServerMessage.class
+/ClientMessageHandler.class

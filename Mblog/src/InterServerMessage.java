@@ -2,12 +2,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class Message {
+public class InterServerMessage {
 
 	
 	ArrayList<String> parts ;
 	
-	public Message() {
+	public InterServerMessage() {
 		parts = new ArrayList<String>();
 	}
 	

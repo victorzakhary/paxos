@@ -25,7 +25,7 @@ public class Replica {
 	ArrayList<ReplicaCommInfo> replicas;
 	int logIndex;
 	boolean isFailed;
-	Queue<MessageHandler> clientMessages;
+	Queue<ClientMessageDetails> clientMessages;
 	
 	public Replica(int replicaId, String logFilePath,String configFilePath)
 	{
@@ -33,14 +33,12 @@ public class Replica {
 		this.logFilePath = logFilePath;
 		this.configFilePath = configFilePath;
 		replicas = new ArrayList<ReplicaCommInfo>(10);
-		clientMessages = new LinkedList<MessageHandler>() ;
+		clientMessages = new LinkedList<ClientMessageDetails>() ;
 		logIndex = -1;
 		this.isFailed = false;
 		readConfiguration();
 		startInstance();
-		Receiver clientReceiver = new Receiver();
-		clientReceiver.start();
-		
+		start();
 	}
 	private void readConfiguration()
 	{
@@ -74,29 +72,7 @@ public class Replica {
 	
 	private void start() 
 	{
-		ServerSocket listener = null;
-        try {
-        	listener = new ServerSocket(this.replicas.get(replicaId).socketId);
-            while (true) {
-            	 Socket connectionSocket = listener.accept();
-                 BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-                 String clientMessage = inFromClient.readLine();
-                 MessageHandler handler = new MessageHandler(this, clientMessage, connectionSocket);
-           }
-        }
-        catch(IOException e)
-        {
-        	e.printStackTrace();
-        }
-        finally {
-        	if (listener != null)
-				try {
-					listener.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-        }
-	 
+		ClientReceiver clientReceiver = new ClientReceiver(this);
+		clientReceiver.start();
 	}
 }
