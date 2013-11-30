@@ -17,6 +17,8 @@ public class Paxos {
 	ArrayList<AcceptedBallotNumAndValue> ListAcceptMsgsAndCounter;
 	int acceptableFailures;
 	int receivedAccepts;
+	boolean decidedValue;
+	boolean proposer;
 	Logging logger;
 
 	public Paxos (int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
@@ -35,9 +37,15 @@ public class Paxos {
 		this.ValueToWrite = write_req_from_client;
 		this.acceptableFailures = 1; //Ask_Victor for t
 		this.receivedAccepts = 0;
+		this.decidedValue = false;
 		this.logger = replicaLogger; //logger of the replica instantiated in replica class - used by paxos instances.
+		this.proposer = false;
 		this.logger.write("Paxos Id:" + String.valueOf(this.id) + " created.");
 		
+	}
+	
+	public void iamProposer() {
+		this.proposer = true;
 	}
 	
 	/**
@@ -57,15 +65,18 @@ public class Paxos {
 	/** sendPrepare
 	 *  Called - on receiving "post" request
 	 *  Does - becomes a leader and sends prepare msg to all
+	 *  returns 1 on success of sendPrepare and go for accept phase
+	 *  returns 0 on failure - that is another value was decided during the prepare phase 
 	 */
-	public void sendPrepare()
+	public int sendPrepare()
 	{
 		//Keep sending prepare message until you hear back from majority
 		boolean keepTrying = true;
+		
 
 		while(keepTrying) {
 			//Initially
-			if(this.numAck == 0 && this.numNAck == 0) {
+			if(this.numAck == 0 && this.numNAck == 0 && !this.decidedValue) {
 				try {
 					//Increase own proposeBallotNumPair
 					this.proposeBallotNumPair.ballotNum = this.proposeBallotNumPair.ballotNum + 1;
@@ -81,14 +92,14 @@ public class Paxos {
 					e.printStackTrace();
 				}
 			}
-			else if(this.numAck > this.numTotalServers/2) {
+			else if(this.numAck > this.numTotalServers/2 && !this.decidedValue) {
 				//Received Ack from majority stop trying now
 				this.logger.write("RECVD ACK FROM MAJORITY FOR BALLOTNUM: " + this.proposeBallotNumPair.toString());
 				keepTrying = false;
 				//do something
 			}
 			//Received Nack from half of the total servers - propose new ballot number
-			else if(this.numNAck >= this.numTotalServers/2) {
+			else if(this.numNAck >= this.numTotalServers/2 && !this.decidedValue) {
 				this.logger.write("RECVD NACK FROM MAJORITY FOR BALLOTNUM: " + this.proposeBallotNumPair.toString());
 				try {
 					//Increase own proposeBallotNumPair
@@ -106,9 +117,11 @@ public class Paxos {
 				}		
 			}
 			else {
-				this.logger.write("ERROR: BALLOTNUM: " + this.proposeBallotNumPair.toString() + " ----------DID NOT RECEIVE HALF OF NACKS OR MAJORITY OF ACKS --------");
+				this.logger.write("ERROR: BALLOTNUM: " + this.proposeBallotNumPair.toString() + " ----------DID NOT RECEIVE HALF OF NACKS OR MAJORITY OF ACKS, OR DECIDED ON A VALUE SO FAIL --------");
+				return 0;
 			}
 		}
+		return 1;
 	}
 	
 	/** onreceivePrepare
@@ -116,7 +129,7 @@ public class Paxos {
 	 * Does - responds back to the leader if ballot number proposed is higher than or equal to the earlier accepted ballot number
 	 * 
 	 */
-	public void onreceivePrepare(BallotPair proposedBallotNumPair) {		
+	public synchronized void onreceivePrepare(BallotPair proposedBallotNumPair) {		
 		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECEIVED PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
 		//send Ack
 		if(proposedBallotNumPair.compareTo(this.ownBallotNumPair) >= 0) {
@@ -139,7 +152,7 @@ public class Paxos {
 	 * r sends for replica
 	 * Does - increases the numPrepareAck and 
 	 */
-	public void onreceiveAckToPrepare(BallotPair r_ownBallotNumPair, BallotPair r_acceptedBallotNumPair, String r_acceptedValue) {
+	public synchronized void onreceiveAckToPrepare(BallotPair r_ownBallotNumPair, BallotPair r_acceptedBallotNumPair, String r_acceptedValue) {
 		//I assume that the received ack is for current ballotnum pair which I proposed most recently and increase ack for it.
 		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECEIVED ACK TO PREPARE MSG WITH BALLOTNUMBER " + r_ownBallotNumPair.toString());
 		if(this.proposeBallotNumPair.compareTo(r_ownBallotNumPair) == 0) {
@@ -177,7 +190,7 @@ public class Paxos {
 	/** onreceiveAccept
 	 * 
 	 */
-	public void onreceiveAccept(BallotPair ballotNumPair, String value) {
+	public synchronized void onreceiveAccept(BallotPair ballotNumPair, String value) {
 		this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG WITH BALLOTNUMBER " + ballotNumPair.toString() + " AND VALUE " + value); 
 		AcceptedBallotNumAndValue tempObj = new AcceptedBallotNumAndValue(ballotNumPair,value);
 		Iterator<AcceptedBallotNumAndValue> itr = this.ListAcceptMsgsAndCounter.iterator();
@@ -216,8 +229,14 @@ public class Paxos {
 	/** onreceiveDecide
 	 * 
 	 */
-	public void onreceiveDecide(String value) {
+	public synchronized void onreceiveDecide(String value) {
 		this.logger.write("PaxosID:" + this.id + "RECVD DECIDE MSG WITH VALUE " + value);
+		this.decidedValue = true;
+		if(this.proposer) {
+		if(!this.ValueToWrite.equals(value)) {
+			//send fail to client
+		}
+		}
 		//WritetoLog where logindex = this.paxosId and value = parameter
 	}
 	

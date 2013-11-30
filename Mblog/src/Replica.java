@@ -7,32 +7,41 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.sql.Time;
 import java.util.AbstractQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 
 public class Replica {
 
 	int replicaId;
-	ArrayList<Paxos> paxosEntries;
+	Map<Integer,Paxos> paxosEntries;
+	ArrayList<String> logEntries;
 	String logFilePath;
 	String configFilePath;
 	ArrayList<ReplicaCommInfo> replicas;
 	boolean isFailed;
 	Queue<ClientMessageDetails> clientMessages;
+	Logging logger;
 	
 	public Replica(String logFilePath,String configFilePath)
 	{
 		// replica ID will be read from the first line in the configuration file
 		this.logFilePath = logFilePath;
+		this.logEntries = new ArrayList<String>();
+		this.paxosEntries = new HashMap<Integer,Paxos>();
 		this.configFilePath = configFilePath;
 		replicas = new ArrayList<ReplicaCommInfo>(10);
 		clientMessages = new LinkedList<ClientMessageDetails>() ;
 		this.isFailed = false;
+
 		readConfiguration();
 		startInstance();
 		start();
@@ -80,6 +89,9 @@ public class Replica {
 	
 	private void start() 
 	{
+		String loggerFileName = "Logger_" + String.valueOf(this.replicaId) + ".txt"; 
+		this.logger = new Logging(String.valueOf(this.replicaId),loggerFileName);
+		this.logger.write("In Start Function to start receiving client messages.");
 		ClientReceiver clientReceiver = new ClientReceiver(this);
 		clientReceiver.start();
 		ClientMessageHandler handler = new ClientMessageHandler(this);
