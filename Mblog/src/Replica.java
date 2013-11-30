@@ -21,20 +21,17 @@ public class Replica {
 	ArrayList<Paxos> paxosEntries;
 	String logFilePath;
 	String configFilePath;
-	String indexFilePath;
 	ArrayList<ReplicaCommInfo> replicas;
-	int logIndex;
 	boolean isFailed;
 	Queue<ClientMessageDetails> clientMessages;
 	
-	public Replica(int replicaId, String logFilePath,String configFilePath)
+	public Replica(String logFilePath,String configFilePath)
 	{
 		// replica ID will be read from the first line in the configuration file
 		this.logFilePath = logFilePath;
 		this.configFilePath = configFilePath;
 		replicas = new ArrayList<ReplicaCommInfo>(10);
 		clientMessages = new LinkedList<ClientMessageDetails>() ;
-		logIndex = -1;
 		this.isFailed = false;
 		readConfiguration();
 		startInstance();
@@ -42,6 +39,16 @@ public class Replica {
 	}
 	private void readConfiguration()
 	{
+		System.out.println("Read Configuration");
+		System.out.println(configFilePath);
+		String current = "";
+		try {
+			current = new java.io.File( "." ).getCanonicalPath();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        System.out.println("Current dir:"+current);
 		Charset charset = Charset.forName("US-ASCII");
 		try (BufferedReader reader = Files.newBufferedReader(FileSystems.getDefault().getPath(configFilePath), charset)) {
 		    String line = null;
@@ -53,6 +60,7 @@ public class Replica {
 		    }
 		} catch (IOException x) {
 		    System.err.format("IOException: %s%n", x);
+		    System.out.println("Failed to read configuration");
 		}
 		Collections.sort(replicas);
 	}
@@ -74,5 +82,7 @@ public class Replica {
 	{
 		ClientReceiver clientReceiver = new ClientReceiver(this);
 		clientReceiver.start();
+		ClientMessageHandler handler = new ClientMessageHandler(this);
+		handler.start();
 	}
 }

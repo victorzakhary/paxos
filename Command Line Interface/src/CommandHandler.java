@@ -28,7 +28,6 @@ public class CommandHandler extends Thread {
 	// post, read, fail and unfail
 	private void handleCommand(String command) {
 		String lowerCaseCommand = command.toLowerCase();
-		System.out.println(command);
 		if (lowerCaseCommand.startsWith("post")) {
 			String [] commandParts = command.split("\\(");
 			commandParts[1] = commandParts[1].replace(")","").trim().replace("\"", "");

@@ -29,7 +29,7 @@ public class Paxos {
 		this.ownBallotNumPair = new BallotPair();
 		this.acceptedValue = "";
 		this.proposeBallotNumPair = new BallotPair(0,replicaId);
-		this.Msg = new MessageCommunication();
+		//this.Msg = new MessageCommunication();
 		this.ListAcceptedNumAndValue = new ArrayList<AcceptedBallotNumAndValue>();
 		this.ListAcceptMsgsAndCounter = new ArrayList<AcceptedBallotNumAndValue>();
 		this.ValueToWrite = write_req_from_client;
