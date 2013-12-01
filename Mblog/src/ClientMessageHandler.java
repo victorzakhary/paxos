@@ -49,6 +49,7 @@ public class ClientMessageHandler extends Thread {
 
 		switch (messageParts[0]) {
 		case "post":
+			
 			break;
 		case "read":
 			String logEntries = getLog();
