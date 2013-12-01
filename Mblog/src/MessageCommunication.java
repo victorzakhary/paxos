@@ -37,16 +37,12 @@ public class MessageCommunication {
 	}
 
 	// nAck message type = 3
-	public void sendNAckToPrepare(int paxosId, BallotPair ownBallotNumPair,
-			BallotPair acceptedBallotNumPair, String acceptedValue) {
+	public void sendNAckToPrepare (int paxosId, BallotPair proposedBallotNumPair) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("3");
 		message.add(Integer.toString(paxosId));
-		message.add(Integer.toString(ownBallotNumPair.processId));
-		message.add(Integer.toString(ownBallotNumPair.ballotNum));
-		message.add(Integer.toString(acceptedBallotNumPair.processId));
-		message.add(Integer.toString(acceptedBallotNumPair.ballotNum));
-		message.add(acceptedValue);
+		message.add(Integer.toString(proposedBallotNumPair.processId));
+		message.add(Integer.toString(proposedBallotNumPair.ballotNum));
 		broadCast(message.getMessage());
 	}
 

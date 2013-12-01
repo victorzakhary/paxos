@@ -140,8 +140,8 @@ public class Paxos {
 		//send Nack
 		else
 		{
-			Msg.sendNAckToPrepare(this.id, this.ownBallotNumPair, this.acceptedBallotNumPair, this.acceptedValue);
-			this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT ACK TO PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
+			Msg.sendNAckToPrepare(this.id, proposedBallotNumPair);
+			this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT NegativeACK TO PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
 		}
 		
 	}
@@ -186,6 +186,25 @@ public class Paxos {
 		}
 		
 	}
+	
+	
+	
+	/**onreceiveNAckToPrepare
+	 * 
+	 */
+	public synchronized void onreceiveNAckToPrepare(BallotPair proposedBallotNumPair) {
+		//I assume that the received negative ack is for current ballotnum pair which I proposed most recently and increase nack for it.
+		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECEIVED Negative ACK TO PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
+		if(this.proposeBallotNumPair.compareTo(proposedBallotNumPair) == 0) {
+			this.numNAck = this.numNAck + 1;
+		    }
+		else {
+			this.logger.write("ERROR: PAXOS ID: " + String.valueOf(this.id) + " Received nack for a different Ballot Number " + proposedBallotNumPair.toString() + " While current propsosed ballot number is " + this.proposeBallotNumPair.toString());
+		}
+		
+	}
+	
+	
 	
 	/** onreceiveAccept
 	 * 
