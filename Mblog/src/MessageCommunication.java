@@ -2,18 +2,12 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 
 public class MessageCommunication {
 
-	ArrayList<ReplicaCommInfo> receivers;
-
-	public MessageCommunication(ArrayList<ReplicaCommInfo> receivers) {
-		this.receivers = receivers;
-	}
 
 	// prepare message type = 1
-	public void sendPrepareMsg(int replicaId, int paxosId, BallotPair proposedBallotNumPair) {
+	public static void sendPrepareMsg(int replicaId, int paxosId, BallotPair proposedBallotNumPair) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("1");
 		message.add(Integer.toString(replicaId));
@@ -24,7 +18,7 @@ public class MessageCommunication {
 	}
 
 	// ack message type = 2
-	public void sendAckToPrepare(int replicaId, int paxosId, BallotPair ownBallotNumPair,
+	public static void sendAckToPrepare(int replicaId, int proposerReplicaId, int paxosId, BallotPair ownBallotNumPair,
 			BallotPair acceptedBallotNumPair, String acceptedValue) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("2");
@@ -35,22 +29,22 @@ public class MessageCommunication {
 		message.add(Integer.toString(acceptedBallotNumPair.processId));
 		message.add(Integer.toString(acceptedBallotNumPair.ballotNum));
 		message.add(acceptedValue);
-		broadCast(message.getMessage());
+		unicastToServer(message.getMessage(),proposerReplicaId);
 	}
 
 	// nAck message type = 3
-	public void sendNAckToPrepare (int replicaId, int paxosId, BallotPair proposedBallotNumPair) {
+	public static void sendNAckToPrepare (int replicaId, int proposerReplicaId, int paxosId, BallotPair proposedBallotNumPair) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("3");
 		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(paxosId));
 		message.add(Integer.toString(proposedBallotNumPair.processId));
 		message.add(Integer.toString(proposedBallotNumPair.ballotNum));
-		broadCast(message.getMessage());
+		unicastToServer(message.getMessage(),proposerReplicaId);
 	}
 
 	// accept message type = 4
-	public void sendAccept(int replicaId, int paxosId, BallotPair proposeBallotNumPair,
+	public static void sendAccept(int replicaId, int paxosId, BallotPair proposeBallotNumPair,
 			String ValueToWrite) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("4");
@@ -64,7 +58,7 @@ public class MessageCommunication {
 	}
 	
 	// Decide message type = 5
-	public void sendDecide(int replicaId, int paxosId, String acceptedValue) {
+	public static void sendDecide(int replicaId, int paxosId, String acceptedValue) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("5");
 		message.add(Integer.toString(replicaId));
@@ -72,9 +66,17 @@ public class MessageCommunication {
 		message.add(acceptedValue);
 		broadCast(message.getMessage());
 	}
+	public static void sendDecide(int replicaId,int proposerReplicaId, int paxosId, String acceptedValue) {
+		InterServerMessage message = new InterServerMessage();
+		message.add("6");
+		message.add(Integer.toString(replicaId));
+		message.add(Integer.toString(paxosId));
+		message.add(acceptedValue);
+		unicastToServer(message.getMessage(),proposerReplicaId);
+	}
 
-	public void broadCast(String message) {
-		for (ReplicaCommInfo receiver : receivers) {
+	private static void broadCast(String message) {
+		for (ReplicaCommInfo receiver : Replica.replicas) {
 			Socket clientSocket;
 			try {
 				// if (receiver.replicaId != replicaId) {
@@ -93,6 +95,21 @@ public class MessageCommunication {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public static void unicastToServer(String replyMessage, int replicaId) {
+		try {
+			
+			ReplicaCommInfo communicationInfo = Replica.replicas.get(replicaId);
+			Socket clientSocket = new Socket(communicationInfo.replicaIP, communicationInfo.serverSocketId);
+	        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+	        outToServer.writeBytes(replyMessage + "\n");
+	        clientSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 }

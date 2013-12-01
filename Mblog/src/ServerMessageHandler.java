@@ -37,7 +37,7 @@ public class ServerMessageHandler extends Thread {
 
 	public void handleClientMessage(String currentMessage) {
 		String[] messageParts = currentMessage.split("|");
-		int replicaId = Integer.parseInt(messageParts[1]);
+		int senderReplicaId = Integer.parseInt(messageParts[1]);
 		int paxosId = Integer.parseInt(messageParts[2]);
 		
 		switch (Integer.parseInt(messageParts[0])) {
@@ -53,7 +53,7 @@ public class ServerMessageHandler extends Thread {
 				message.add(Integer.toString(this.replica.replicaId));
 				message.add(Integer.toString(paxosId));
 				message.add(this.replica.logEntries.get(paxosId - 1));				
-				this.replyToServer(message.getMessage(),replicaId);
+				MessageCommunication.unicastToServer(message.getMessage(),senderReplicaId);
 				
 			}
 			//Check for ongoing paxos Instance for this log position
@@ -61,12 +61,12 @@ public class ServerMessageHandler extends Thread {
 				Paxos currentPaxos = this.replica.paxosEntries.get(paxosId);
 				if(currentPaxos == null) {
 					//(int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
-					this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId, 1, "", this.replica.logger));
+					this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId, "", this.replica.logger));
 					currentPaxos = this.replica.paxosEntries.get(paxosId);
 				}
 			
 				BallotPair receivedBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]),Integer.parseInt(messageParts[3]));
-				currentPaxos.onreceivePrepare(receivedBallotNumPair);
+				currentPaxos.onreceivePrepare(receivedBallotNumPair,senderReplicaId);
 				//create a new one otherwise			
 			}
 			
@@ -84,12 +84,12 @@ public class ServerMessageHandler extends Thread {
 				Paxos currentPaxos = this.replica.paxosEntries.get(paxosId);
 				if(currentPaxos == null) {
 					//(int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
-					this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId, 1, "", this.replica.logger));
+					this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId, "", this.replica.logger));
 					currentPaxos = this.replica.paxosEntries.get(paxosId);
 				}
 			
 				BallotPair receivedBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]),Integer.parseInt(messageParts[3]));
-				currentPaxos.onreceivePrepare(receivedBallotNumPair);
+				currentPaxos.onreceivePrepare(receivedBallotNumPair,senderReplicaId);
 				//create a new one otherwise			
 			}
 			
@@ -106,26 +106,4 @@ public class ServerMessageHandler extends Thread {
 		}
 	}
 
-	/*
-	 * public String getLog() { StringBuilder logEntries = new StringBuilder();
-	 * for (Paxos paxos : replica.paxosEntries) { if (paxos.acceptedValue !=
-	 * null) logEntries.append(paxos.acceptedValue + "\n"); } return
-	 * logEntries.toString(); }
-	 */
-
-	public void replyToServer(String replyMessage, int replicaId) {
-		try {
-			
-			ReplicaCommInfo communicationInfo = replica.replicas.get(replicaId);
-			
-			Socket clientSocket = new Socket(communicationInfo.replicaIP, communicationInfo.serverSocketId);
-	        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-	        outToServer.writeBytes(replyMessage + "\n");
-	        clientSocket.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
 }

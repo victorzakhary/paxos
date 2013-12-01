@@ -21,7 +21,7 @@ public class Replica {
 	ArrayList<String> logEntries;
 	String logFilePath;
 	String configFilePath;
-	ArrayList<ReplicaCommInfo> replicas;
+	static ArrayList<ReplicaCommInfo> replicas;
 	boolean isFailed;
 	Queue<ClientMessageDetails> clientMessages;
 	Queue<String> serverMessages;
