@@ -23,6 +23,7 @@ Replica replica;
      			 System.out.println("server message = " + serverMessage);
                  replica.serverMessages.add(serverMessage);
                  System.out.println(replica.serverMessages.size());
+                 connectionSocket.close();
            }
         }
         catch(IOException e)

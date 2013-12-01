@@ -1,8 +1,10 @@
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 
-
-public class ServerMessageHandler extends Thread{
+public class ServerMessageHandler extends Thread {
 	Replica replica;
 
 	public ServerMessageHandler(Replica replica) {
@@ -11,13 +13,13 @@ public class ServerMessageHandler extends Thread{
 
 	public void run() {
 		while (true) {
-			String  serverMessage = null;
+			String serverMessage = null;
 			synchronized (replica.serverMessages) {
 				serverMessage = replica.serverMessages.poll();
 			}
 			if (serverMessage != null) {
 				System.out.println(serverMessage);
-				
+
 				if (!replica.isFailed) {
 					handleClientMessage(serverMessage);
 				}
@@ -44,7 +46,7 @@ public class ServerMessageHandler extends Thread{
 			//Already present in Log
 			if(paxosId <= this.replica.logEntries.size()) {
 				Paxos tempPaxos = this.replica.paxosEntries.get(paxosId);
-				sendDecide(paxosId,this.replica.logEntries.get(paxosId - 1));
+				this.replyToServer(paxosId,this.replica.logEntries.get(paxosId - 1));
 			}
 			//Check for ongoing paxos Instance for this log position
 			else {
@@ -57,7 +59,6 @@ public class ServerMessageHandler extends Thread{
 			//create a new one otherwise
 							
 			}
-			
 			break;
 		case 2:
 			break;
@@ -72,15 +73,27 @@ public class ServerMessageHandler extends Thread{
 
 		}
 	}
-/*
-	public String getLog() {
-		StringBuilder logEntries = new StringBuilder();
-		for (Paxos paxos : replica.paxosEntries) {
-			if (paxos.acceptedValue != null)
-				logEntries.append(paxos.acceptedValue + "\n");
-		}
-		return logEntries.toString();
-	}
-*/	
 
+	/*
+	 * public String getLog() { StringBuilder logEntries = new StringBuilder();
+	 * for (Paxos paxos : replica.paxosEntries) { if (paxos.acceptedValue !=
+	 * null) logEntries.append(paxos.acceptedValue + "\n"); } return
+	 * logEntries.toString(); }
+	 */
+
+	public void replyToServer(String replyMessage, int replicaId) {
+		try {
+			
+			ReplicaCommInfo communicationInfo = replica.replicas.get(replicaId);
+			
+			Socket clientSocket = new Socket(communicationInfo.replicaIP, communicationInfo.serverSocketId);
+	        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+	        outToServer.writeBytes(replyMessage + "\n");
+	        clientSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
 }
