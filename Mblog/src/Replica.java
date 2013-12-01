@@ -3,11 +3,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
-<<<<<<< HEAD
-=======
 import java.sql.Time;
 import java.util.AbstractQueue;
->>>>>>> 3d3c91064527aba87c8aa12333f191c3443437b0
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
