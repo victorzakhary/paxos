@@ -77,7 +77,7 @@ public class MessageCommunication {
 			Socket clientSocket;
 			try {
 				// if (receiver.replicaId != replicaId) {
-				clientSocket = new Socket(receiver.replicaIP, receiver.socketId);
+				clientSocket = new Socket(receiver.replicaIP, receiver.clientSocketId);
 				DataOutputStream outToServer = new DataOutputStream(
 						clientSocket.getOutputStream());
 				outToServer.writeBytes(message + "\n");

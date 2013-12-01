@@ -16,7 +16,7 @@ public class ClientReceiver extends Thread {
 	{
 		ServerSocket listener = null;
         try {
-        	listener = new ServerSocket(replica.replicas.get(replica.replicaId).socketId);
+        	listener = new ServerSocket(replica.replicas.get(replica.replicaId).clientSocketId);
             while (true) {
             	 Socket connectionSocket = listener.accept();
                  BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));

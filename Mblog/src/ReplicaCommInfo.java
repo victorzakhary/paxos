@@ -4,14 +4,16 @@ import java.net.UnknownHostException;
 
 public class ReplicaCommInfo implements Comparable<ReplicaCommInfo>{
 	int replicaId;
-	int socketId;
+	int clientSocketId;
+	int serverSocketId;
 	InetAddress replicaIP;
 	
 	public ReplicaCommInfo (String configurationLine )
 	{
 		String cofigurationParts [] = configurationLine.split(" ");
 		this.replicaId = Integer.parseInt(cofigurationParts[0]);
-		this.socketId= Integer.parseInt(cofigurationParts[2]);
+		this.clientSocketId= Integer.parseInt(cofigurationParts[2]);
+		this.serverSocketId = Integer.parseInt(cofigurationParts[3]);
 		try {
 			this.replicaIP = InetAddress.getByName(cofigurationParts[1]);
 		} catch (UnknownHostException e) {
