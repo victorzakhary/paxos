@@ -24,6 +24,7 @@ public class Paxos {
 	public Paxos (int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
 	{
 		this.id = id;
+		this.replicaId = replicaid;
 		this.numTotalServers = num_total_servers;
 		this.numAck = 0;
 		this.numNAck = 0;
@@ -83,7 +84,7 @@ public class Paxos {
 					this.numAck = 0;
 					this.numNAck = 0;
 					//send prepare msg
-					Msg.sendPrepareMsg(this.id, this.proposeBallotNumPair);
+					Msg.sendPrepareMsg(this.replicaId, this.id, this.proposeBallotNumPair);
 					this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT PREPARE BALLOTNUMBER" + this.proposeBallotNumPair.toString());
 					//Waiting for people to respond within 150 milliseconds otherwise - Increase BallotNumber and Propose again.
 					Thread.sleep((long) (Math.random()*150));
@@ -107,7 +108,7 @@ public class Paxos {
 					this.numAck = 0;
 					this.numNAck = 0;
 					//send prepare msg
-					Msg.sendPrepareMsg(this.id, this.proposeBallotNumPair);
+					Msg.sendPrepareMsg(this.replicaId, this.id, this.proposeBallotNumPair);
 					this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT PREPARE BALLOTNUMBER" + this.proposeBallotNumPair.toString());
 					//Waiting for people to respond within 150 milliseconds otherwise - Increase BallotNumber and Propose again. - Ask_Victor
 					Thread.sleep((long) (Math.random()*150));
@@ -134,13 +135,13 @@ public class Paxos {
 		//send Ack
 		if(proposedBallotNumPair.compareTo(this.ownBallotNumPair) >= 0) {
 			this.ownBallotNumPair = proposedBallotNumPair;
-			Msg.sendAckToPrepare(this.id, this.ownBallotNumPair, this.acceptedBallotNumPair, this.acceptedValue);
+			Msg.sendAckToPrepare(this.replicaId, this.id, this.ownBallotNumPair, this.acceptedBallotNumPair, this.acceptedValue);
 			this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT ACK TO PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
 		}
 		//send Nack
 		else
 		{
-			Msg.sendNAckToPrepare(this.id, proposedBallotNumPair);
+			Msg.sendNAckToPrepare(this.replicaId, this.id, proposedBallotNumPair);
 			this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT NegativeACK TO PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
 		}
 		
@@ -173,11 +174,11 @@ public class Paxos {
 		    	}
 		    	if(novalue) {
 		    		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECVD ACK TO PREPARE FROM MAJORITY, SENDING ACCEPT MSG WITH VALUE " + this.ValueToWrite);
-		    		Msg.sendAccept(this.id, this.proposeBallotNumPair,this.ValueToWrite);
+		    		Msg.sendAccept(this.replicaId, this.id, this.proposeBallotNumPair,this.ValueToWrite);
 		    	}
 		    	else {
 		    		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECVD ACK TO PREPARE FROM MAJORITY, SENDING ACCEPT MSG WITH VALUE " + highestBallotNumObj.r_acceptedValue);
-		    		Msg.sendAccept(this.id, this.proposeBallotNumPair, highestBallotNumObj.r_acceptedValue);
+		    		Msg.sendAccept(this.replicaId, this.id, this.proposeBallotNumPair, highestBallotNumObj.r_acceptedValue);
 		    	}
 		    }
 		}
@@ -231,7 +232,7 @@ public class Paxos {
 			if(itrObj.numTimes >= this.numTotalServers - this.acceptableFailures) {
 				this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
 				//Periodically send
-				Msg.sendDecide(this.id,itrObj.r_acceptedValue); //broadcast it to all
+				Msg.sendDecide(this.replicaId,this.id,itrObj.r_acceptedValue); //broadcast it to all
 				//decide to yourself
 				this.onreceiveDecide(itrObj.r_acceptedValue);
 			}
@@ -241,7 +242,7 @@ public class Paxos {
 		if(ballotNumPair.compareTo(this.ownBallotNumPair) >= 0) {
 			this.acceptedBallotNumPair = ballotNumPair;
 			this.acceptedValue = value;
-			Msg.sendAccept(this.id,ballotNumPair, value); //broadcast it to all
+			Msg.sendAccept(this.replicaId, this.id,ballotNumPair, value); //broadcast it to all
 		}
 	}
 	

@@ -35,9 +35,28 @@ public class ServerMessageHandler extends Thread{
 
 	public void handleClientMessage(String currentMessage) {
 		String[] messageParts = currentMessage.split("|");
+		int paxosId = Integer.parseInt(messageParts[1]);
 		
 		switch (Integer.parseInt(messageParts[0])) {
 		case 1:
+			//receivePrepareMsg
+			this.replica.logger.write("Received Prepare Msg for Paxos Instance: " + String.valueOf(paxosId) );
+			//Already present in Log
+			if(paxosId <= this.replica.logEntries.size()) {
+				Paxos tempPaxos = this.replica.paxosEntries.get(paxosId);
+				sendDecide(paxosId,this.replica.logEntries.get(paxosId - 1));
+			}
+			//Check for ongoing paxos Instance for this log position
+			else {
+			Paxos currentPaxos = this.replica.paxosEntries.get(paxosId);
+			if(currentPaxos == null) {
+				this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId,));
+				currentPaxos = this.replica.get(paxosId);
+			}
+			currentPaxos.onreceivePrepare(proposedBallotNumPair);
+			//create a new one otherwise
+							
+			}
 			
 			break;
 		case 2:

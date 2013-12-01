@@ -13,9 +13,10 @@ public class MessageCommunication {
 	}
 
 	// prepare message type = 1
-	public void sendPrepareMsg(int paxosId, BallotPair proposedBallotNumPair) {
+	public void sendPrepareMsg(int replicaId, int paxosId, BallotPair proposedBallotNumPair) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("1");
+		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(paxosId));
 		message.add(Integer.toString(proposedBallotNumPair.processId));
 		message.add(Integer.toString(proposedBallotNumPair.ballotNum));
@@ -23,10 +24,11 @@ public class MessageCommunication {
 	}
 
 	// ack message type = 2
-	public void sendAckToPrepare(int paxosId, BallotPair ownBallotNumPair,
+	public void sendAckToPrepare(int replicaId, int paxosId, BallotPair ownBallotNumPair,
 			BallotPair acceptedBallotNumPair, String acceptedValue) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("2");
+		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(paxosId));
 		message.add(Integer.toString(ownBallotNumPair.processId));
 		message.add(Integer.toString(ownBallotNumPair.ballotNum));
@@ -37,9 +39,10 @@ public class MessageCommunication {
 	}
 
 	// nAck message type = 3
-	public void sendNAckToPrepare (int paxosId, BallotPair proposedBallotNumPair) {
+	public void sendNAckToPrepare (int replicaId, int paxosId, BallotPair proposedBallotNumPair) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("3");
+		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(paxosId));
 		message.add(Integer.toString(proposedBallotNumPair.processId));
 		message.add(Integer.toString(proposedBallotNumPair.ballotNum));
@@ -47,10 +50,11 @@ public class MessageCommunication {
 	}
 
 	// accept message type = 4
-	public void sendAccept(int paxosId, BallotPair proposeBallotNumPair,
+	public void sendAccept(int replicaId, int paxosId, BallotPair proposeBallotNumPair,
 			String ValueToWrite) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("4");
+		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(paxosId));
 		message.add(Integer.toString(proposeBallotNumPair.processId));
 		message.add(Integer.toString(proposeBallotNumPair.ballotNum));
@@ -60,9 +64,10 @@ public class MessageCommunication {
 	}
 	
 	// Decide message type = 5
-	public void sendDecide(int paxosId, String acceptedValue) {
+	public void sendDecide(int replicaId, int paxosId, String acceptedValue) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("5");
+		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(paxosId));
 		message.add(acceptedValue);
 		broadCast(message.getMessage());

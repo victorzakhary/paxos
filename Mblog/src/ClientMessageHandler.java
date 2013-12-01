@@ -60,7 +60,7 @@ public class ClientMessageHandler extends Thread {
 			
 			//int numServers = this.replica.getTotalNumServers();
 		    if (currentPaxos == null) {
-		    	this.replica.paxosEntries.put(nextlogPosition, new Paxos(nextlogPosition, 1, this.replica.replicaId,valueToPost,this.replica.logger));
+		    	this.replica.paxosEntries.put(nextlogPosition, new Paxos(nextlogPosition,this.replica.replicaId,1,valueToPost,this.replica.logger));
 		    	currentPaxos = this.replica.paxosEntries.get(nextlogPosition);
 		    }
 		    
