@@ -49,7 +49,28 @@ public class ClientMessageHandler extends Thread {
 
 		switch (messageParts[0]) {
 		case "post":
+			String valueToPost = messageParts[1];
+			//Check for next log position from log arraylist
+			//check in hashmap for active paxos instance with this id
+			//if not found create a new paxos instance with this id
+			int nextlogPosition = this.replica.logEntries.size() + 1;
+			Paxos currentPaxos = this.replica.paxosEntries.get(nextlogPosition);
+			// public Paxos (int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
+			//totalnumber of servers assumed 1 to be read from configuration file.
 			
+			//int numServers = this.replica.getTotalNumServers();
+		    if (currentPaxos == null) {
+		    	this.replica.paxosEntries.put(nextlogPosition, new Paxos(nextlogPosition, 1, this.replica.replicaId,valueToPost,this.replica.logger));
+		    	currentPaxos = this.replica.paxosEntries.get(nextlogPosition);
+		    }
+		    
+			//set this.proposer = true; iamProposer()
+		    currentPaxos.iamProposer();
+		    if(currentPaxos.sendPrepare() == 0) 
+		    	replyToClient(currentMessage,"Failed to post");
+			//sendprepare message
+			//if send prepare returns 1 go for next round
+			//else reply back with a fail message to client
 			break;
 		case "read":
 			String logEntries = getLog();
@@ -68,7 +89,7 @@ public class ClientMessageHandler extends Thread {
 
 		}
 	}
-
+/*
 	public String getLog() {
 		StringBuilder logEntries = new StringBuilder();
 		for (Paxos paxos : replica.paxosEntries) {
@@ -77,7 +98,15 @@ public class ClientMessageHandler extends Thread {
 		}
 		return logEntries.toString();
 	}
-
+*/
+	public String getLog() {
+		StringBuilder logEntries = new StringBuilder();
+		for(String entry : this.replica.logEntries) {
+			logEntries.append(entry + "\n");
+		}
+		return logEntries.toString();
+	}
+	
 	public void replyToClient(ClientMessageDetails clientMessage,
 			String replyMessage) {
 		try {
