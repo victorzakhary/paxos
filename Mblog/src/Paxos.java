@@ -17,6 +17,7 @@ public class Paxos {
 	ArrayList<AcceptedBallotNumAndValue> ListAcceptMsgsAndCounter;
 	int acceptableFailures;
 	int receivedAccepts;
+	int acceptedCounter;
 	boolean decidedValue;
 	boolean proposer;
 	Logging logger;
@@ -41,6 +42,7 @@ public class Paxos {
 		this.decidedValue = false;
 		this.logger = replicaLogger; //logger of the replica instantiated in replica class - used by paxos instances.
 		this.proposer = false;
+		this.acceptedCounter = 0;
 		this.logger.write("Paxos Id:" + String.valueOf(this.id) + " created.");
 		
 	}
@@ -212,37 +214,25 @@ public class Paxos {
 	 */
 	public synchronized void onreceiveAccept(BallotPair ballotNumPair, String value) {
 		this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG WITH BALLOTNUMBER " + ballotNumPair.toString() + " AND VALUE " + value); 
-		AcceptedBallotNumAndValue tempObj = new AcceptedBallotNumAndValue(ballotNumPair,value);
-		Iterator<AcceptedBallotNumAndValue> itr = this.ListAcceptMsgsAndCounter.iterator();
-		boolean increasedCount = false;
-		while(itr.hasNext()) {
-			AcceptedBallotNumAndValue itrObj = itr.next();
-			if(itrObj.equalTo(tempObj)) {
-				itrObj.numTimes = itrObj.numTimes + 1;
-				increasedCount = true;
-			}
-		}
-		if(!increasedCount) {
-			this.ListAcceptMsgsAndCounter.add(tempObj);
-		}
-		
-		itr = this.ListAcceptMsgsAndCounter.iterator();
-		while(itr.hasNext()) {
-			AcceptedBallotNumAndValue itrObj = itr.next();
-			if(itrObj.numTimes >= this.numTotalServers - this.acceptableFailures) {
-				this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
-				//Periodically send
-				Msg.sendDecide(this.replicaId,this.id,itrObj.r_acceptedValue); //broadcast it to all
-				//decide to yourself
-				this.onreceiveDecide(itrObj.r_acceptedValue);
-			}
-		}
-		
 		//ask about deciding - do we go for all new values
-		if(ballotNumPair.compareTo(this.ownBallotNumPair) >= 0) {
+		if(ballotNumPair.compareTo(this.ownBallotNumPair) > 0) {
 			this.acceptedBallotNumPair = ballotNumPair;
 			this.acceptedValue = value;
+			this.acceptedCounter = 0;
 			Msg.sendAccept(this.replicaId, this.id,ballotNumPair, value); //broadcast it to all
+		}
+		else if(ballotNumPair.compareTo(this.ownBallotNumPair) == 0) {
+			if(this.acceptedCounter == 0)
+			{
+				Msg.sendAccept(this.replicaId, this.id,ballotNumPair, value); //broadcast it to all
+
+			}
+			this.acceptedCounter = this.acceptedCounter + 1;
+			if(this.acceptedCounter >= this.numTotalServers - this.acceptableFailures) {
+				this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
+				//Periodically send
+				Msg.sendDecide(this.replicaId,this.id,this.acceptedValue); //broadcast it to all
+			}
 		}
 	}
 	

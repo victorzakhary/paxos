@@ -37,7 +37,8 @@ public class ServerMessageHandler extends Thread {
 
 	public void handleClientMessage(String currentMessage) {
 		String[] messageParts = currentMessage.split("|");
-		int paxosId = Integer.parseInt(messageParts[1]);
+		int replicaId = Integer.parseInt(messageParts[1]);
+		int paxosId = Integer.parseInt(messageParts[2]);
 		
 		switch (Integer.parseInt(messageParts[0])) {
 		case 1:
@@ -45,22 +46,53 @@ public class ServerMessageHandler extends Thread {
 			this.replica.logger.write("Received Prepare Msg for Paxos Instance: " + String.valueOf(paxosId) );
 			//Already present in Log
 			if(paxosId <= this.replica.logEntries.size()) {
+				
 				Paxos tempPaxos = this.replica.paxosEntries.get(paxosId);
-				this.replyToServer(paxosId,this.replica.logEntries.get(paxosId - 1));
+				InterServerMessage message = new InterServerMessage();
+				message.add("5");
+				message.add(Integer.toString(this.replica.replicaId));
+				message.add(Integer.toString(paxosId));
+				message.add(this.replica.logEntries.get(paxosId - 1));				
+				this.replyToServer(message.getMessage(),replicaId);
+				
 			}
 			//Check for ongoing paxos Instance for this log position
 			else {
-			Paxos currentPaxos = this.replica.paxosEntries.get(paxosId);
-			if(currentPaxos == null) {
-				this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId,));
-				currentPaxos = this.replica.get(paxosId);
+				Paxos currentPaxos = this.replica.paxosEntries.get(paxosId);
+				if(currentPaxos == null) {
+					//(int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
+					this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId, 1, "", this.replica.logger));
+					currentPaxos = this.replica.paxosEntries.get(paxosId);
+				}
+			
+				BallotPair receivedBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]),Integer.parseInt(messageParts[3]));
+				currentPaxos.onreceivePrepare(receivedBallotNumPair);
+				//create a new one otherwise			
 			}
-			currentPaxos.onreceivePrepare(proposedBallotNumPair);
-			//create a new one otherwise
-							
-			}
+			
 			break;
 		case 2:
+			//receiveAcktoPrepareMsg
+			this.replica.logger.write("Received AckToPrepare Msg for Paxos Instance: " + String.valueOf(paxosId) );
+			//Already present in Log
+			if(paxosId <= this.replica.logEntries.size()) {
+				//Ignore it
+				this.replica.logger.write("Ignoring AckToPrepare Msg for Paxos Instance: " + String.valueOf(paxosId) );
+			}	
+			//Check for ongoing paxos Instance for this log position
+			else {
+				Paxos currentPaxos = this.replica.paxosEntries.get(paxosId);
+				if(currentPaxos == null) {
+					//(int id, int replicaid, int num_total_servers, String write_req_from_client, Logging replicaLogger)
+					this.replica.paxosEntries.put(paxosId, new Paxos(paxosId, this.replica.replicaId, 1, "", this.replica.logger));
+					currentPaxos = this.replica.paxosEntries.get(paxosId);
+				}
+			
+				BallotPair receivedBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]),Integer.parseInt(messageParts[3]));
+				currentPaxos.onreceivePrepare(receivedBallotNumPair);
+				//create a new one otherwise			
+			}
+			
 			break;
 		case 3:
 			break;
