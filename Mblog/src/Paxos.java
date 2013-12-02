@@ -10,7 +10,7 @@ public class Paxos {
 	String acceptedValue; // last accepted (decided) Value for this paxos instance, once set, could not be changed
 	BallotPair proposeBallotNumPair; // for proposing and increasing on loosing
 	BallotPair ownBallotNumPair; // for responding to prepare messages
-	static int numTotalServers = Replica.replicas.size();
+	static int numTotalServers = 0;
 	String ValueToWrite;
 	ArrayList<AcceptedBallotNumAndValue> ListAcceptedNumAndValue;
 	ArrayList<AcceptedBallotNumAndValue> ListAcceptMsgsAndCounter;
@@ -32,6 +32,7 @@ public class Paxos {
 		this.ownBallotNumPair = new BallotPair();
 		this.acceptedValue = "";
 		this.proposeBallotNumPair = new BallotPair(0,replicaId);
+		numTotalServers = Replica.replicas.size();
 		//this.Msg = new MessageCommunication();
 		this.ListAcceptedNumAndValue = new ArrayList<AcceptedBallotNumAndValue>();
 		this.ListAcceptMsgsAndCounter = new ArrayList<AcceptedBallotNumAndValue>();
