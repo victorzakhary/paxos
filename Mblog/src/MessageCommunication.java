@@ -74,6 +74,14 @@ public class MessageCommunication {
 		message.add(acceptedValue);
 		unicastToServer(message.getMessage(),proposerReplicaId);
 	}
+	
+	public static void sendRecover(int replicaId,int highestDecidedIndex) {
+		InterServerMessage message = new InterServerMessage();
+		message.add("7");
+		message.add(Integer.toString(replicaId));
+		message.add(Integer.toString(highestDecidedIndex));
+		broadCast(message.getMessage());
+	}
 
 	private static void broadCast(String message) {
 		for (ReplicaCommInfo receiver : Replica.replicas) {

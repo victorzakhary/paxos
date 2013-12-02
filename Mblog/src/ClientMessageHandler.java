@@ -97,7 +97,19 @@ public class ClientMessageHandler extends Thread {
 			break;
 		case "unfail":
 			replica.isFailed = false;
+			replica.isRecovered = false;
+			
+			while(!replica.isRecovered)
+			{
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			replyToClient(currentMessage, "Server is up back");
+			
 			break;
 		default:
 			break;
