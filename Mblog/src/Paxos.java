@@ -80,7 +80,7 @@ public class Paxos {
 	 *  returns 1 on success of sendPrepare and go for accept phase
 	 *  returns 0 on failure - that is another value was decided during the prepare phase 
 	 */
-	public int sendPrepare()
+	public void sendPrepare()
 	{
 		//Keep sending prepare message until you hear back from majority
 		boolean keepTrying = true;
@@ -129,11 +129,10 @@ public class Paxos {
 				}		
 			}
 			else {
-				this.logger.write("ERROR: BALLOTNUM: " + this.proposeBallotNumPair.toString() + " ----------DID NOT RECEIVE HALF OF NACKS OR MAJORITY OF ACKS, OR DECIDED ON A VALUE SO FAIL --------");
-				return 0;
+				this.logger.write("ERROR: BALLOTNUM: " + this.proposeBallotNumPair.toString() + " ----------HALF OF THE NODES ARE FAIL, OR DECIDED ON A VALUE --------");
+				keepTrying = false;
 			}
 		}
-		return 1;
 	}
 	
 	/** onreceivePrepare
@@ -239,11 +238,14 @@ public class Paxos {
 				MessageCommunication.sendAccept(this.replicaId, this.id,ballotNumPair, value); //broadcast it to all
 
 			}
-			this.acceptedCounter = this.acceptedCounter + 1;
-			if(this.acceptedCounter >= numTotalServers - this.acceptableFailures) {
-				this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
-				//Periodically send
-				MessageCommunication.sendDecide(this.replicaId,this.id,this.acceptedValue); //broadcast it to all
+			//added this code for having to recent more accept messages than n - t
+			if(this.acceptedCounter < numTotalServers - this.acceptableFailures) {
+				this.acceptedCounter = this.acceptedCounter + 1;
+				if(this.acceptedCounter >= numTotalServers - this.acceptableFailures) {
+					this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
+					//Periodically send
+					MessageCommunication.sendDecide(this.replicaId,this.id,this.acceptedValue); //broadcast it to all
+				}
 			}
 		}
 	}
