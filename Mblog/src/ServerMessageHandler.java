@@ -3,6 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ServerMessageHandler extends Thread {
 	Replica replica;
@@ -93,17 +94,123 @@ public class ServerMessageHandler extends Thread {
 			}			
 			break;
 		case 3:
+			//receiveNAcktoPrepareMsg
+			this.replica.logger.write("Received NAckToPrepare Msg for Paxos Instance: " + String.valueOf(paxosId) );
+			//Ongoing paxos Instance
+			if(paxosId == numEntries - 1 && !this.replica.paxosEntries.get(paxosId).isDecided) {
+				currentPaxos = this.replica.paxosEntries.get(paxosId);
+				BallotPair ownBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]), Integer.parseInt(messageParts[3]));
+				currentPaxos.onreceiveNAckToPrepare(ownBallotNumPair);
+			}
+			else {
+				if(paxosId < numEntries - 1) {
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId, senderReplicaId, paxosId, this.replica.paxosEntries.get(paxosId).valueWritten);
+					this.replica.logger.write("Responded to  NAckToPrepare Msg with Decide Msg for Paxos Instance: " + String.valueOf(paxosId) );
+				}
+				else {
+					this.replica.logger.write("Ignoring NAckToPrepare Msg for Paxos Instance: " + String.valueOf(paxosId) );
+				}
+			}			
 			break;
 		case 4:
+			//onreceiveAccept
+			BallotPair acceptBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]), Integer.parseInt(messageParts[3]));
+			this.replica.logger.write("Received Accept Msg for Paxos Instance: " + String.valueOf(paxosId) );
+			if(paxosId > numEntries - 1) {
+				//Create a new one
+				this.replica.paxosEntries.add(new Paxos(paxosId,this.replica.replicaId,"",this.replica.logger));
+				currentPaxos = this.replica.paxosEntries.get(numEntries);
+				currentPaxos.onreceiveAccept(acceptBallotNumPair,messageParts[5]);
+			}
+			else if( paxosId == numEntries - 1) {
+				//check if it is active or not
+				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
+				//active and join it - else already decided and send decide
+				if(!currentPaxos.isDecided) {
+					currentPaxos.onreceiveAccept(acceptBallotNumPair,messageParts[5]);
+				}
+				else {
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+				}
+			}
+			else {
+				//already decided
+				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
+				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+			}
 			break;
 		case 5:
+			//onreceiveDecide
+			String value = messageParts[3];
+			if(paxosId < numEntries - 1) {
+				//Redundant check
+			    if(!this.replica.paxosEntries.get(paxosId).isDecided) {
+			    	currentPaxos = this.replica.paxosEntries.get(paxosId);
+			    	currentPaxos.onreceiveDecide(value);
+			    }
+			}
+			else if( paxosId == numEntries - 1) {
+				//check if it is active or not
+				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
+				//active and join it - else already decided and send decide
+				if(!currentPaxos.isDecided) {
+					currentPaxos.onreceiveDecide(value);
+				}
+			}
+			else {
+				//future stuff in which I did not participate because I was down
+				this.replica.logger.write("RECVD DECIDE MSG FOR PAXOS INSTANCE " + String.valueOf(paxosId) + " BUT IGNORED BECAUSE THIS REPLICA WAS DOWN IN INITIAL PHASES.");
+			}
 			break;
 		case 6:
+			String value1 = messageParts[3];
+			if(paxosId < numEntries - 1) {
+				//Redundant check
+			    if(!this.replica.paxosEntries.get(paxosId).isDecided) {
+			    	currentPaxos = this.replica.paxosEntries.get(paxosId);
+			    	currentPaxos.onreceiveDecide(value1);
+			    }
+			}
+			else if( paxosId == numEntries - 1) {
+				//check if it is active or not
+				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
+				//active and join it - else already decided and send decide
+				if(!currentPaxos.isDecided) {
+					currentPaxos.onreceiveDecide(value1);
+				}
+			}
+			else {
+				//future stuff in which I did not participate because I was down
+				this.replica.logger.write("RECVD DECIDE MSG FOR PAXOS INSTANCE " + String.valueOf(paxosId) + " BUT IGNORED BECAUSE THIS REPLICA WAS DOWN IN INITIAL PHASES.");
+			}
 			break;
 		case 7:
-			
+
+			//received recoverme message from a failed node
+			int highestindex = paxosId;
+			int recoverNodeId = senderReplicaId;
+			int num = 0;
+			if(this.replica.paxosEntries.get(numEntries -1).isDecided) {
+				num = numEntries - 1;
+			}
+			else {
+				num = numEntries - 2;
+			}
+			if(highestindex <= num ) {
+				//sendUpdate or everythinguptodate
+				ArrayList<String> newValues = new ArrayList<String>();
+				for(int i=highestindex +1;i<=num;i++) {
+					newValues.add(this.replica.paxosEntries.get(i).valueWritten + "|");
+				}
+				MessageCommunication.replyOnRecover(this.replica.replicaId,recoverNodeId,newValues);
+			}
+			else 
+			{
+				this.replica.logger.write("RECOVERING NODE KNOWS MUCH MORE THAN ME :(");
+			}
 			break;
-		case 8:
+		case 8 :
+			// handle recovery message from other replicas and set isRecovered = true
 			break;
 		default:
 			break;

@@ -67,6 +67,7 @@ public class MessageCommunication {
 		message.add(acceptedValue);
 		broadCast(message.getMessage());
 	}
+	// Decide message type = 6
 	public static void sendDecideUnicast(int replicaId,int proposerReplicaId, int paxosId, String acceptedValue) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("6");
