@@ -200,7 +200,7 @@ public class ServerMessageHandler extends Thread {
 				//sendUpdate or everythinguptodate
 				ArrayList<String> newValues = new ArrayList<String>();
 				for(int i=highestindex +1;i<=num;i++) {
-					newValues.add(this.replica.paxosEntries.get(i).valueWritten + "|");
+					newValues.add(this.replica.paxosEntries.get(i).valueWritten);
 				}
 				MessageCommunication.replyOnRecover(this.replica.replicaId,recoverNodeId,newValues);
 			}
@@ -210,7 +210,30 @@ public class ServerMessageHandler extends Thread {
 			}
 			break;
 		case 8 :
+			//receiving replyToRecover message
+			int messageSize = paxosId;
+			int numberOfEntries = replica.paxosEntries.size()-1;
+			int highestDecidedIndex = 0 ;
+			if(replica.paxosEntries.get(numberOfEntries).isDecided)
+			{
+				highestDecidedIndex = numberOfEntries;
+			}
+			else
+			{
+				replica.paxosEntries.remove(numberOfEntries);
+				highestDecidedIndex = numberOfEntries-1;
+			}
 			// handle recovery message from other replicas and set isRecovered = true
+			if(!this.replica.isRecovered) {
+				synchronized(this.replica.paxosEntries){
+					
+					for(int i = 0; i<messageSize;i++) {
+						this.replica.paxosEntries.add(new Paxos(highestDecidedIndex+i+1,this.replica.replicaId,messageParts[3+i]));
+					}
+				}
+				replica.isRecovered = true;
+			}
+			//else don't do anything I am have recovered
 			break;
 		default:
 			break;

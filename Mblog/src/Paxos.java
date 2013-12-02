@@ -46,6 +46,15 @@ public class Paxos {
 		
 	}
 	
+	public Paxos (int id, int replicaid, String write_recover)
+	{
+		this.id = id;
+		this.replicaId = replicaid;
+		this.isDecided = true;
+		this.proposer = false;
+		this.valueWritten = write_recover;	
+	}
+	
 	public void iamProposer() {
 		this.proposer = true;
 	}
