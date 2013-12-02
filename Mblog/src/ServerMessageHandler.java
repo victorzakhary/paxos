@@ -22,7 +22,7 @@ public class ServerMessageHandler extends Thread {
 				System.out.println(serverMessage);
 
 				if (!replica.isFailed) {
-					handleClientMessage(serverMessage);
+					handleServerMessage(serverMessage);
 				}
 			} else {
 				try {
@@ -38,8 +38,8 @@ public class ServerMessageHandler extends Thread {
     public void sendMessage() {
     	
     }
-	public void handleClientMessage(String currentMessage) {
-		String[] messageParts = currentMessage.split("|");
+	public void handleServerMessage(String currentMessage) {
+		String[] messageParts = currentMessage.split("[|]");
 		int senderReplicaId = Integer.parseInt(messageParts[1]);
 		int paxosId = Integer.parseInt(messageParts[2]);
 		int numEntries = this.replica.paxosEntries.size();
@@ -81,7 +81,7 @@ public class ServerMessageHandler extends Thread {
 				currentPaxos = this.replica.paxosEntries.get(paxosId);
 				BallotPair ownBallotNumPair = new BallotPair(Integer.parseInt(messageParts[4]), Integer.parseInt(messageParts[3]));
 				BallotPair acceptedBallotNumPair = new BallotPair(Integer.parseInt(messageParts[6]), Integer.parseInt(messageParts[5]));
-				currentPaxos.onreceiveAckToPrepare(ownBallotNumPair, acceptedBallotNumPair,messageParts[7]);
+				currentPaxos.onreceiveAckToPrepare(ownBallotNumPair, acceptedBallotNumPair,messageParts.length>7?messageParts[7]:"");
 			}
 			else {
 				if(paxosId < numEntries - 1) {

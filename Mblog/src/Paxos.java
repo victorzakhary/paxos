@@ -184,7 +184,7 @@ public class Paxos {
 		    		}
 		    	}
 		    	if(novalue) {
-		    		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECVD ACK TO PREPARE FROM MAJORITY, SENDING ACCEPT MSG WITH VALUE " + this.ValueToWrite);
+		    		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECVD ACK TO PREPARE FROM MAJORITY, SENDING ACCEPT MSG WITH VALUE " + this.ValueToWrite );
 		    		MessageCommunication.sendAccept(this.replicaId, this.id, this.proposeBallotNumPair,this.ValueToWrite);
 		    	}
 		    	else {
