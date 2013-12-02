@@ -160,7 +160,6 @@ public class ClientMessageHandler extends Thread {
 		try {
 			DataOutputStream outToClient = new DataOutputStream(
 					clientMessage.clientSocket.getOutputStream());
-
 			outToClient.writeBytes(replyMessage + "\n");
 			System.out.println("client reply = " + replyMessage);
 			clientMessage.clientSocket.close();

@@ -43,13 +43,15 @@ public class CommandHandler extends Thread {
 	
 	private void sendToServer (String message)
 	{
+		char [] cbuf = new char[14000]; 
 		try {
 	        String replyFromServer;
 	        clientSocket = new Socket("localhost", 5000);
 	        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 	        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 	        outToServer.writeBytes(message + "\n");
-	        replyFromServer = inFromServer.readLine();
+	        inFromServer.read(cbuf);
+	        replyFromServer = new String(cbuf);
 	        System.out.println(replyFromServer);
 	        clientSocket.close();
 		} catch (UnknownHostException e) {
