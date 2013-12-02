@@ -1,5 +1,9 @@
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Socket;
+
+import sun.misc.Cleaner;
 
 public class ClientMessageHandler extends Thread {
 
@@ -158,11 +162,14 @@ public class ClientMessageHandler extends Thread {
 	public void replyToClient(ClientMessageDetails clientMessage,
 			String replyMessage) {
 		try {
+			Inet4Address clientAddress = (Inet4Address) Inet4Address.getByName(clientMessage.clientIP);
+			Socket clientSocket = new Socket(clientAddress, clientMessage.clientPortNumber);
 			DataOutputStream outToClient = new DataOutputStream(
-					clientMessage.clientSocket.getOutputStream());
-			outToClient.writeBytes(replyMessage + "\n");
+					clientSocket.getOutputStream());
+			outToClient.write( replyMessage.getBytes());
 			System.out.println("client reply = " + replyMessage);
-			clientMessage.clientSocket.close();
+			outToClient.close();
+			clientSocket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

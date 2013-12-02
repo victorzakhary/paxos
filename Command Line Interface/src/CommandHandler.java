@@ -3,6 +3,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.Inet4Address;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -14,9 +15,17 @@ public class CommandHandler extends Thread {
 	private BufferedReader in;
 	private DataOutputStream out;
 	Socket clientSocket;
-
-	public CommandHandler(String command) {
+	int serverPortNumber;
+	String serverIP;
+	int clientPortNumber;
+	String clientIP;
+	public CommandHandler(String command, int serverPostNumber, String serverIP,int clientPortNumber, String clientIP ) {
 		this.command = command;
+		this.serverPortNumber =serverPostNumber;
+		this.serverIP = serverIP;
+		this.clientIP = clientIP;
+		this.clientPortNumber = clientPortNumber;
+				
 	}
 
 	@Override
@@ -31,28 +40,25 @@ public class CommandHandler extends Thread {
 		if (lowerCaseCommand.startsWith("post")) {
 			String [] commandParts = command.split("\\(");
 			commandParts[1] = commandParts[1].replace(")","").trim().replace("\"", "");
-			sendToServer("post|" + commandParts[1]);
+			sendToServer("post|" + commandParts[1]+"|"+clientIP+"|"+clientPortNumber);
 		} else if (lowerCaseCommand.startsWith("read")) {
-			sendToServer("read");
+			sendToServer("read"+"|"+clientIP+"|"+clientPortNumber);
 		} else if (lowerCaseCommand.startsWith("fail")) {
-			sendToServer("fail");
+			sendToServer("fail"+"|"+clientIP+"|"+clientPortNumber);
 		} else if (lowerCaseCommand.startsWith("unfail")) {
-			sendToServer("unfail");
+			sendToServer("unfail"+"|"+clientIP+"|"+clientPortNumber);
 		}
 	}
 	
 	private void sendToServer (String message)
 	{
-		char [] cbuf = new char[14000]; 
+		
 		try {
 	        String replyFromServer;
-	        clientSocket = new Socket("localhost", 5000);
+	        Inet4Address serverIPAddess = (Inet4Address) Inet4Address.getByName(serverIP);
+	        clientSocket = new Socket(serverIPAddess, this.serverPortNumber);
 	        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-	        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 	        outToServer.writeBytes(message + "\n");
-	        inFromServer.read(cbuf);
-	        replyFromServer = new String(cbuf);
-	        System.out.println(replyFromServer);
 	        clientSocket.close();
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
