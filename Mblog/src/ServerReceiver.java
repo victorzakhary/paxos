@@ -16,6 +16,7 @@ Replica replica;
 		ServerSocket listener = null;
         try {
         	listener = new ServerSocket(replica.replicas.get(replica.replicaId).serverSocketId);
+        	System.out.println("Listening in server port" + replica.replicas.get(replica.replicaId).serverSocketId);
             while (true) {
             	 Socket connectionSocket = listener.accept();
                  BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));

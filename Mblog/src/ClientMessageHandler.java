@@ -41,18 +41,20 @@ public class ClientMessageHandler extends Thread {
 
 	// Message parts are "fail" or "unfail" or "read" or "post|Message Body"
 	public void handleClientMessage(ClientMessageDetails currentMessage) {
-		String[] messageParts = new String[1];
+		String[] messageParts;
 		if(currentMessage.message.contains("|"))
 		{
-			messageParts = currentMessage.message.split("|");
+			messageParts = currentMessage.message.split("[|]");
 		}
 		else
 		{
+			messageParts =  new String[1];
 			messageParts[0] = currentMessage.message;
 		}
 
 		switch (messageParts[0]) {
 		case "post":
+			System.out.println("Starting post handling");
 			String valueToPost = messageParts[1];
 			//Check for next log position from log arraylist
 			//check in hashmap for active paxos instance with this id
@@ -71,10 +73,12 @@ public class ClientMessageHandler extends Thread {
 		    
 			//set this.proposer = true; iamProposer()
 		    testPaxos.iamProposer();
+		    System.out.println("Send prepare is called");
 		    testPaxos.sendPrepare();
 		    
 		    while (!testPaxos.isDecided)
 		    {
+		    	System.out.println("Value is not decided");
 		    	try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {

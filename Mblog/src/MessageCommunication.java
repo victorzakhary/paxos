@@ -103,7 +103,7 @@ public class MessageCommunication {
 			Socket clientSocket;
 			try {
 				// if (receiver.replicaId != replicaId) {
-				clientSocket = new Socket(receiver.replicaIP, receiver.clientSocketId);
+				clientSocket = new Socket(receiver.replicaIP, receiver.serverSocketId);
 				DataOutputStream outToServer = new DataOutputStream(
 						clientSocket.getOutputStream());
 				outToServer.writeBytes(message + "\n");

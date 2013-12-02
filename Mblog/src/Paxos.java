@@ -97,7 +97,7 @@ public class Paxos {
 					MessageCommunication.sendPrepareMsg(this.replicaId, this.id, this.proposeBallotNumPair);
 					this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT PREPARE BALLOTNUMBER" + this.proposeBallotNumPair.toString());
 					//Waiting for people to respond within 150 milliseconds otherwise - Increase BallotNumber and Propose again.
-					Thread.sleep((long) (Math.random()*150));
+					Thread.sleep(10000);
 				}
 				catch(InterruptedException e) {
 					e.printStackTrace();
@@ -121,7 +121,7 @@ public class Paxos {
 					MessageCommunication.sendPrepareMsg(this.replicaId, this.id, this.proposeBallotNumPair);
 					this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT PREPARE BALLOTNUMBER" + this.proposeBallotNumPair.toString());
 					//Waiting for people to respond within 150 milliseconds otherwise - Increase BallotNumber and Propose again. - Ask_Victor
-					Thread.sleep((long) (Math.random()*150));
+					Thread.sleep(10000);
 				}
 				catch(InterruptedException e) {
 					e.printStackTrace();
