@@ -22,6 +22,7 @@ public class Replica {
 	String configFilePath;
 	static ArrayList<ReplicaCommInfo> replicas;
 	boolean isFailed;
+	boolean isRecovered;
 	Queue<ClientMessageDetails> clientMessages;
 	Queue<String> serverMessages;
 	Logging logger;
@@ -35,6 +36,7 @@ public class Replica {
 		replicas = new ArrayList<ReplicaCommInfo>(10);
 		clientMessages = new LinkedList<ClientMessageDetails>() ;
 		this.isFailed = false;
+		this.isRecovered = false;
 
 		readConfiguration();
 		startInstance();
