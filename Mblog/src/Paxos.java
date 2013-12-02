@@ -224,13 +224,16 @@ public class Paxos {
 	public synchronized void onreceiveAccept(BallotPair ballotNumPair, String value) {
 		this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG WITH BALLOTNUMBER " + ballotNumPair.toString() + " AND VALUE " + value); 
 		//ask about deciding - do we go for all new values
+		
 		if(ballotNumPair.compareTo(this.ownBallotNumPair) > 0) {
 			this.acceptedBallotNumPair = ballotNumPair;
-			this.acceptedValue = value;
 			this.acceptedCounter = 0;
+			this.acceptedValue = value;
 			MessageCommunication.sendAccept(this.replicaId, this.id,ballotNumPair, value); //broadcast it to all
 		}
 		else if(ballotNumPair.compareTo(this.ownBallotNumPair) == 0) {
+			this.acceptedBallotNumPair = ballotNumPair;
+			this.acceptedValue = value;
 			if(this.acceptedCounter == 0)
 			{
 				MessageCommunication.sendAccept(this.replicaId, this.id,ballotNumPair, value); //broadcast it to all
