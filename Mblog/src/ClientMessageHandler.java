@@ -55,7 +55,8 @@ public class ClientMessageHandler extends Thread {
 			//if not found create a new paxos instance with this id
 			Paxos testPaxos;
 			int numEntries = this.replica.paxosEntries.size();
-			if (numEntries == 0 || (this.replica.paxosEntries.get(numEntries - 1)).isDecided){
+			if (numEntries == 0
+					|| (this.replica.paxosEntries.get(numEntries - 1)).isDecided){
 				this.replica.paxosEntries.add(new Paxos(numEntries,this.replica.replicaId,valueToPost,this.replica.logger));
 				testPaxos = this.replica.paxosEntries.get(numEntries);
 			}
@@ -66,11 +67,25 @@ public class ClientMessageHandler extends Thread {
 		    
 			//set this.proposer = true; iamProposer()
 		    testPaxos.iamProposer();
-		    if(testPaxos.sendPrepare() == 0) 
-		    	replyToClient(currentMessage,"Failed to post");
-			//sendprepare message
-			//if send prepare returns 1 go for next round
-			//else reply back with a fail message to client
+		    testPaxos.sendPrepare();
+		    
+		    while (!testPaxos.isDecided)
+		    {
+		    	try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    }
+		    if(testPaxos.valueWritten.equals(valueToPost))
+		    {
+		    	replyToClient(currentMessage, "SUCCESS");
+		    }
+		    else
+		    {
+		    	replyToClient(currentMessage, "FAIL");
+		    }
 			break;
 		case "read":
 			String logEntries = getLog();

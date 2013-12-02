@@ -242,12 +242,6 @@ public class Paxos {
 		this.logger.write("PaxosID:" + this.id + "RECVD DECIDE MSG WITH VALUE " + value);
 		this.isDecided = true;
 		this.valueWritten = value;
-		if(this.proposer) {
-		if(!this.ValueToWrite.equals(value)) {
-			//send fail to client
-			
-		}
-		}
 	}
 	
 }
