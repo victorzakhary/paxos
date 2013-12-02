@@ -25,4 +25,9 @@ public class BallotPair implements Comparable<BallotPair>{
 
 		}
 	}
+	
+	public String toString()
+	{
+		return "(" + Integer.toString(ballotNum) + "," + Integer.toString(processId) + ")" ;  
+	}
 }

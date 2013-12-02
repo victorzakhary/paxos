@@ -2,6 +2,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 public class MessageCommunication {
 
@@ -81,6 +82,19 @@ public class MessageCommunication {
 		message.add(Integer.toString(replicaId));
 		message.add(Integer.toString(highestDecidedIndex));
 		broadCast(message.getMessage());
+	}
+	
+	public static void replyOnRecover (int replicaId, int proposerId, ArrayList<String> messages)
+	{
+		InterServerMessage message = new InterServerMessage();
+		message.add("8");
+		message.add(Integer.toString(replicaId));
+		message.add (Integer.toString(messages.size()));
+		for(int i = 0; i< messages.size();i++)
+		{
+			message.add(messages.get(i));
+		}
+		unicastToServer( message.getMessage(),proposerId);
 	}
 
 	private static void broadCast(String message) {

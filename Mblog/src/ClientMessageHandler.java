@@ -23,6 +23,10 @@ public class ClientMessageHandler extends Thread {
 								&& replica.isFailed)) {
 					handleClientMessage(currentMessage);
 				}
+				else 
+				{
+			    	replyToClient(currentMessage, "FAIL");
+				}
 			} else {
 				try {
 					Thread.sleep(150);
@@ -98,7 +102,18 @@ public class ClientMessageHandler extends Thread {
 		case "unfail":
 			replica.isFailed = false;
 			replica.isRecovered = false;
-			
+			int numberOfEntries = replica.paxosEntries.size()-1;
+			int highestDecidedIndex = 0 ;
+			if(replica.paxosEntries.get(numberOfEntries).isDecided)
+			{
+				highestDecidedIndex = numberOfEntries;
+			}
+			else
+			{
+				highestDecidedIndex = numberOfEntries-1;
+
+			}
+			MessageCommunication.sendRecover(this.replica.replicaId, highestDecidedIndex);
 			while(!replica.isRecovered)
 			{
 				try {
