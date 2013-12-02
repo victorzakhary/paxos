@@ -211,20 +211,21 @@ public class ServerMessageHandler extends Thread {
 			break;
 		case 8 :
 			//receiving replyToRecover message
-			int messageSize = paxosId;
-			int numberOfEntries = replica.paxosEntries.size()-1;
-			int highestDecidedIndex = 0 ;
-			if(replica.paxosEntries.get(numberOfEntries).isDecided)
-			{
-				highestDecidedIndex = numberOfEntries;
-			}
-			else
-			{
-				replica.paxosEntries.remove(numberOfEntries);
-				highestDecidedIndex = numberOfEntries-1;
-			}
+			
 			// handle recovery message from other replicas and set isRecovered = true
 			if(!this.replica.isRecovered) {
+				int messageSize = paxosId;
+				int numberOfEntries = replica.paxosEntries.size()-1;
+				int highestDecidedIndex = 0 ;
+				if(replica.paxosEntries.get(numberOfEntries).isDecided)
+				{
+					highestDecidedIndex = numberOfEntries;
+				}
+				else
+				{
+					replica.paxosEntries.remove(numberOfEntries);
+					highestDecidedIndex = numberOfEntries-1;
+				}
 				synchronized(this.replica.paxosEntries){
 					
 					for(int i = 0; i<messageSize;i++) {

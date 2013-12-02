@@ -35,6 +35,7 @@ public class Replica {
 		this.configFilePath = configFilePath;
 		replicas = new ArrayList<ReplicaCommInfo>(10);
 		clientMessages = new LinkedList<ClientMessageDetails>() ;
+		serverMessages = new LinkedList<String>();
 		this.isFailed = false;
 		this.isRecovered = false;
 
@@ -92,5 +93,9 @@ public class Replica {
 		clientReceiver.start();
 		ClientMessageHandler handler = new ClientMessageHandler(this);
 		handler.start();
+		ServerReceiver serverReceiver = new ServerReceiver(this);
+		serverReceiver.start();
+		ServerMessageHandler serverHandle = new ServerMessageHandler(this);
+		serverHandle.start();
 	}
 }
