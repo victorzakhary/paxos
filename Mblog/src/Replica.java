@@ -17,8 +17,7 @@ import java.util.Random;
 public class Replica {
 
 	int replicaId;
-	Map<Integer,Paxos> paxosEntries;
-	ArrayList<String> logEntries;
+	ArrayList<Paxos> paxosEntries;
 	String logFilePath;
 	String configFilePath;
 	static ArrayList<ReplicaCommInfo> replicas;
@@ -31,8 +30,7 @@ public class Replica {
 	{
 		// replica ID will be read from the first line in the configuration file
 		this.logFilePath = logFilePath;
-		this.logEntries = new ArrayList<String>();
-		this.paxosEntries = new HashMap<Integer,Paxos>();
+		this.paxosEntries = new ArrayList<Paxos>();
 		this.configFilePath = configFilePath;
 		replicas = new ArrayList<ReplicaCommInfo>(10);
 		clientMessages = new LinkedList<ClientMessageDetails>() ;

@@ -17,7 +17,8 @@ public class Paxos {
 	int acceptableFailures;
 	int receivedAccepts;
 	int acceptedCounter;
-	boolean decidedValue;
+	boolean isDecided;
+	String valueWritten;
 	boolean proposer;
 	Logging logger;
 
@@ -37,7 +38,7 @@ public class Paxos {
 		this.ValueToWrite = write_req_from_client;
 		this.acceptableFailures = 1; //Ask_Victor for t
 		this.receivedAccepts = 0;
-		this.decidedValue = false;
+		this.isDecided = false;
 		this.logger = replicaLogger; //logger of the replica instantiated in replica class - used by paxos instances.
 		this.proposer = false;
 		this.acceptedCounter = 0;
@@ -77,7 +78,7 @@ public class Paxos {
 
 		while(keepTrying) {
 			//Initially
-			if(this.numAck == 0 && this.numNAck == 0 && !this.decidedValue) {
+			if(this.numAck == 0 && this.numNAck == 0 && !this.isDecided) {
 				try {
 					//Increase own proposeBallotNumPair
 					this.proposeBallotNumPair.ballotNum = this.proposeBallotNumPair.ballotNum + 1;
@@ -93,14 +94,14 @@ public class Paxos {
 					e.printStackTrace();
 				}
 			}
-			else if(this.numAck > this.numTotalServers/2 && !this.decidedValue) {
+			else if(this.numAck > numTotalServers/2 && !this.isDecided) {
 				//Received Ack from majority stop trying now
 				this.logger.write("RECVD ACK FROM MAJORITY FOR BALLOTNUM: " + this.proposeBallotNumPair.toString());
 				keepTrying = false;
 				//do something
 			}
 			//Received Nack from half of the total servers - propose new ballot number
-			else if(this.numNAck >= this.numTotalServers/2 && !this.decidedValue) {
+			else if(this.numNAck >= numTotalServers/2 && !this.isDecided) {
 				this.logger.write("RECVD NACK FROM MAJORITY FOR BALLOTNUM: " + this.proposeBallotNumPair.toString());
 				try {
 					//Increase own proposeBallotNumPair
@@ -160,7 +161,7 @@ public class Paxos {
 			this.numAck = this.numAck + 1;
 		    this.ListAcceptedNumAndValue.add(new AcceptedBallotNumAndValue(r_acceptedBallotNumPair, r_acceptedValue));
 		    //On receiving ack from majority
-		    if(this.numAck > this.numTotalServers/2) {
+		    if(this.numAck > numTotalServers/2) {
 		    	Iterator<AcceptedBallotNumAndValue> itr = this.ListAcceptedNumAndValue.iterator();
 		    	boolean novalue = true;
 		    	AcceptedBallotNumAndValue highestBallotNumObj = new AcceptedBallotNumAndValue(new BallotPair(0,0),"");
@@ -226,7 +227,7 @@ public class Paxos {
 
 			}
 			this.acceptedCounter = this.acceptedCounter + 1;
-			if(this.acceptedCounter >= this.numTotalServers - this.acceptableFailures) {
+			if(this.acceptedCounter >= numTotalServers - this.acceptableFailures) {
 				this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
 				//Periodically send
 				MessageCommunication.sendDecide(this.replicaId,this.id,this.acceptedValue); //broadcast it to all
@@ -239,13 +240,14 @@ public class Paxos {
 	 */
 	public synchronized void onreceiveDecide(String value) {
 		this.logger.write("PaxosID:" + this.id + "RECVD DECIDE MSG WITH VALUE " + value);
-		this.decidedValue = true;
+		this.isDecided = true;
+		this.valueWritten = value;
 		if(this.proposer) {
 		if(!this.ValueToWrite.equals(value)) {
 			//send fail to client
+			
 		}
 		}
-		//WritetoLog where logindex = this.paxosId and value = parameter
 	}
 	
 }
