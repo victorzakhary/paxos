@@ -4,3 +4,4 @@
 /ClientMessageDetails.class
 /ClientMessageHandler.class
 /ServerMessageHandler.class
+/DualPaxos.class

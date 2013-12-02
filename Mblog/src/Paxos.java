@@ -135,7 +135,7 @@ public class Paxos {
 		//send Ack
 		if(proposedBallotNumPair.compareTo(this.ownBallotNumPair) >= 0) {
 			this.ownBallotNumPair = proposedBallotNumPair;
-			MessageCommunication.sendAckToPrepare(this.replicaId,proposalReplicaId, this.id, this.ownBallotNumPair, this.acceptedBallotNumPair, this.acceptedValue);
+			MessageCommunication.sendAckToPrepare(this.replicaId, proposalReplicaId, this.id, this.ownBallotNumPair, this.acceptedBallotNumPair, this.acceptedValue);
 			this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT ACK TO PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
 		}
 		//send Nack
