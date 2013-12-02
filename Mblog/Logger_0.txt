@@ -258,3 +258,8 @@
 11:03:14	Server:0	Received Accept Msg for Paxos Instance: 2
 11:03:14	Server:0	Received Accept Msg for Paxos Instance: 2
 11:03:14	Server:0	ERROR: BALLOTNUM: (1,0) ----------DID NOT RECEIVE HALF OF NACKS OR MAJORITY OF ACKS, OR DECIDED ON A VALUE SO FAIL --------
+11:11:17	Server:0	In Start Function to start receiving client messages.
+11:11:57	Server:0	In Start Function to start receiving client messages.
+11:12:09	Server:0	In Start Function to start receiving client messages.
+11:14:02	Server:0	In Start Function to start receiving client messages.
+11:14:10	Server:0	In Start Function to start receiving client messages.
