@@ -6,14 +6,19 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		int serverPortNumber = 5000;
+		String serverAddress = "127.0.0.1";
+		int clientPortNumber = 6000;
+		String clientAddress = "127.0.0.1";
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					System.in));
 
 			String input = "";
-
+			ServerMessagesReceiver receiver = new ServerMessagesReceiver(clientPortNumber);
+			receiver.start();
 			while ((input = br.readLine()) != null) {
-				CommandHandler handler = new CommandHandler(input);
+				CommandHandler handler = new CommandHandler(input,serverPortNumber,serverAddress, clientPortNumber,  clientAddress);
 				handler.start();
 			}
 		} catch (IOException io) {

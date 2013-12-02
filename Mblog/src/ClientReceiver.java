@@ -21,10 +21,11 @@ public class ClientReceiver extends Thread {
             	 Socket connectionSocket = listener.accept();
                  BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
                  String clientMessage = inFromClient.readLine();
-     			System.out.println("client message = " + clientMessage);
-                 ClientMessageDetails handler = new ClientMessageDetails(clientMessage, connectionSocket);
+     			 System.out.println("client message = " + clientMessage);
+                 ClientMessageDetails handler = new ClientMessageDetails(clientMessage);
                  replica.clientMessages.add(handler);
                  System.out.println(replica.clientMessages.size());
+                 connectionSocket.close();
            }
         }
         catch(IOException e)
