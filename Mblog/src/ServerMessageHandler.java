@@ -227,8 +227,9 @@ public class ServerMessageHandler extends Thread {
 					highestDecidedIndex = numberOfEntries-1;
 				}
 				synchronized(this.replica.paxosEntries){
-					
+					System.out.println("Message Size = " + messageSize);
 					for(int i = 0; i<messageSize;i++) {
+						System.out.println("Message Size = " + messageSize + "Message" + messageParts[3+i]);
 						this.replica.paxosEntries.add(new Paxos(highestDecidedIndex+i+1,this.replica.replicaId,messageParts[3+i]));
 					}
 				}

@@ -80,7 +80,7 @@ public class ClientMessageHandler extends Thread {
 		    System.out.println("Send prepare is called");
 		    testPaxos.sendPrepare();
 		    
-		    while (!testPaxos.isDecided)
+		    /*while (!testPaxos.isDecided)
 		    {
 		    	System.out.println("Value is not decided");
 		    	try {
@@ -89,13 +89,17 @@ public class ClientMessageHandler extends Thread {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-		    }
-		    if(testPaxos.valueWritten.equals(valueToPost))
+		    }*/
+		    if(testPaxos.isDecided && testPaxos.valueWritten.equals(valueToPost))
 		    {
 		    	replyToClient(currentMessage, "SUCCESS");
 		    }
 		    else
 		    {
+		    	if(!testPaxos.isDecided)
+		    	{
+		    		replica.paxosEntries.remove(testPaxos);
+		    	}
 		    	replyToClient(currentMessage, "FAIL");
 		    }
 			break;
