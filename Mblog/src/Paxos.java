@@ -21,6 +21,7 @@ public class Paxos {
 	String valueWritten;
 	boolean proposer;
 	Logging logger;
+	ArrayList<String> logEnrties;
 
 	public Paxos (int id, int replicaid, String write_req_from_client, Logging replicaLogger)
 	{
@@ -43,6 +44,7 @@ public class Paxos {
 		this.logger = replicaLogger; //logger of the replica instantiated in replica class - used by paxos instances.
 		this.proposer = false;
 		this.acceptedCounter = 0;
+		this.logEnrties = new ArrayList<String>();
 		this.logger.write("Paxos Id:" + String.valueOf(this.id) + " created.");
 		
 	}
@@ -244,7 +246,14 @@ public class Paxos {
 				if(this.acceptedCounter >= numTotalServers - this.acceptableFailures) {
 					this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
 					//Periodically send
-					MessageCommunication.sendDecide(this.replicaId,this.id,this.acceptedValue); //broadcast it to all
+					//append your message buffer with acceptedValue
+					StringBuilder Values = new StringBuilder();
+					Values.append(this.acceptedValue+":");
+					for (String x : this.logEnrties)
+					{
+						Values.append(x+":");
+					}
+					MessageCommunication.sendDecide(this.replicaId,this.id,Values.subSequence(0, Values.length()-1).toString()); //broadcast it to all
 				}
 			}
 		}
@@ -253,10 +262,22 @@ public class Paxos {
 	/** onreceiveDecide
 	 * 
 	 */
-	public synchronized void onreceiveDecide(String value) {
-		this.logger.write("PaxosID:" + this.id + "RECVD DECIDE MSG WITH VALUE " + value);
+	public synchronized void onreceiveDecide(ArrayList<String> valueList) {
+		//received decide message for the first time
+		if(this.logEnrties.size() == 0 ) {
+			this.logEnrties = valueList;
+		}
+		else {
+			Iterator<String> itr = valueList.iterator();
+			while(itr.hasNext()) {
+				String strValue = itr.next();
+				if(!this.logEnrties.contains(strValue))
+					this.logEnrties.add(strValue);
+			}
+		}
+		this.logger.write("PaxosID:" + this.id + "RECVD DECIDE MSG WITH ARRAY SIZE " + valueList.size());
 		this.isDecided = true;
-		this.valueWritten = value;
+	//	this.valueWritten = value;
 	}
 	
 }

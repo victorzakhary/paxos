@@ -130,32 +130,38 @@ public class ServerMessageHandler extends Thread {
 					currentPaxos.onreceiveAccept(acceptBallotNumPair,messageParts[5]);
 				}
 				else {
-					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.logEnrties);
 				}
 			}
 			else {
 				//already decided
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
-				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.logEnrties);
 			}
 			break;
 		case 5:
 			//onreceiveDecide
 			String value = messageParts[3];
+			ArrayList<String> Parts = new ArrayList<String>();
+	    	String [] tempArray = value.split(":");
+	    	for(String x: tempArray) {
+	    		Parts.add(x);
+	    	}
 			if(paxosId < numEntries - 1) {
 				//Redundant check
-			    if(!this.replica.paxosEntries.get(paxosId).isDecided) {
 			    	currentPaxos = this.replica.paxosEntries.get(paxosId);
-			    	currentPaxos.onreceiveDecide(value);
-			    }
+			    	currentPaxos.onreceiveDecide(Parts);
 			}
 			else if( paxosId == numEntries - 1) {
 				//check if it is active or not
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
 				//active and join it - else already decided and send decide
+				/**
 				if(!currentPaxos.isDecided) {
 					currentPaxos.onreceiveDecide(value);
 				}
+				*/
+				currentPaxos.onreceiveDecide(Parts);
 			}
 			else {
 				//future stuff in which I did not participate because I was down
@@ -164,20 +170,21 @@ public class ServerMessageHandler extends Thread {
 			break;
 		case 6:
 			String value1 = messageParts[3];
+			ArrayList<String> Parts1 = new ArrayList<String>();
+	    	String [] tempArray1 = value.split(":");
+	    	for(String x: tempArray1) {
+	    		Parts1.add(x);
+	    	}
 			if(paxosId < numEntries - 1) {
 				//Redundant check
-			    if(!this.replica.paxosEntries.get(paxosId).isDecided) {
 			    	currentPaxos = this.replica.paxosEntries.get(paxosId);
-			    	currentPaxos.onreceiveDecide(value1);
-			    }
+			    	currentPaxos.onreceiveDecide(Parts1);
 			}
 			else if( paxosId == numEntries - 1) {
 				//check if it is active or not
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
 				//active and join it - else already decided and send decide
-				if(!currentPaxos.isDecided) {
-					currentPaxos.onreceiveDecide(value1);
-				}
+					currentPaxos.onreceiveDecide(Parts1);
 			}
 			else {
 				//future stuff in which I did not participate because I was down

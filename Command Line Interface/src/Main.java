@@ -6,9 +6,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int serverPortNumber = 5000;
+		int serverPortNumber = 5002;
 		String serverAddress = "127.0.0.1";
-		int clientPortNumber = 6000;
+		int clientPortNumber = 6002;
 		String clientAddress = "127.0.0.1";
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(

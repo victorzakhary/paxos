@@ -160,3 +160,34 @@
 11:03:07	Server:1	PaxosID:2RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE test3
 11:03:07	Server:1	PaxosID:2RECVD DECIDE MSG WITH VALUE test3
 11:03:07	Server:1	Received Accept Msg for Paxos Instance: 2
+11:43:28	Server:1	In Start Function to start receiving client messages.
+11:45:37	Server:1	In Start Function to start receiving client messages.
+11:45:37	Server:1	Received Prepare Msg for Paxos Instance: 0
+11:45:37	Server:1	Paxos Id:0 created.
+11:45:37	Server:1	PaxosID:0 RECEIVED PREPARE MSG WITH BALLOTNUMBER (1,0)
+11:45:37	Server:1	PaxosID:0 SENT ACK TO PREPARE MSG WITH BALLOTNUMBER (1,0)
+11:45:37	Server:1	Received Accept Msg for Paxos Instance: 0
+11:45:37	Server:1	PaxosID:0RECVD ACCEPT MSG WITH BALLOTNUMBER (1,0) AND VALUE Message1
+11:45:37	Server:1	Received Accept Msg for Paxos Instance: 0
+11:45:37	Server:1	PaxosID:0RECVD ACCEPT MSG WITH BALLOTNUMBER (1,0) AND VALUE Message1
+11:45:37	Server:1	PaxosID:0RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE Message1
+11:45:37	Server:1	Received Accept Msg for Paxos Instance: 0
+11:45:37	Server:1	PaxosID:0RECVD ACCEPT MSG WITH BALLOTNUMBER (1,0) AND VALUE Message1
+11:45:37	Server:1	PaxosID:0RECVD DECIDE MSG WITH VALUE Message1
+11:45:37	Server:1	Received Accept Msg for Paxos Instance: 0
+11:45:37	Server:1	Received Accept Msg for Paxos Instance: 0
+11:49:17	Server:1	In Start Function to start receiving client messages.
+11:49:17	Server:1	Received Prepare Msg for Paxos Instance: 0
+11:49:17	Server:1	Paxos Id:0 created.
+11:49:17	Server:1	PaxosID:0 RECEIVED PREPARE MSG WITH BALLOTNUMBER (1,0)
+11:49:17	Server:1	PaxosID:0 SENT ACK TO PREPARE MSG WITH BALLOTNUMBER (1,0)
+11:49:17	Server:1	Received Accept Msg for Paxos Instance: 0
+11:49:17	Server:1	PaxosID:0RECVD ACCEPT MSG WITH BALLOTNUMBER (1,0) AND VALUE Message1
+11:49:17	Server:1	Received Accept Msg for Paxos Instance: 0
+11:49:17	Server:1	PaxosID:0RECVD ACCEPT MSG WITH BALLOTNUMBER (1,0) AND VALUE Message1
+11:49:17	Server:1	PaxosID:0RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE Message1
+11:49:17	Server:1	Received Accept Msg for Paxos Instance: 0
+11:49:17	Server:1	PaxosID:0RECVD ACCEPT MSG WITH BALLOTNUMBER (1,0) AND VALUE Message1
+11:49:17	Server:1	PaxosID:0RECVD DECIDE MSG WITH VALUE Message1
+11:49:17	Server:1	Received Accept Msg for Paxos Instance: 0
+11:49:17	Server:1	Received Accept Msg for Paxos Instance: 0
