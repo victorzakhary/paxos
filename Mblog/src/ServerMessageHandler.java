@@ -64,13 +64,13 @@ public class ServerMessageHandler extends Thread {
 					currentPaxos.onreceivePrepare(proposedBallotNumPair, senderReplicaId);
 				}
 				else {
-					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.logEnrties);
 				}
 			}
 			else {
 				//already decided
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
-				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.logEnrties);
 			}
 			break;
 		case 2:
@@ -85,7 +85,7 @@ public class ServerMessageHandler extends Thread {
 			}
 			else {
 				if(paxosId < numEntries - 1) {
-					MessageCommunication.sendDecideUnicast(this.replica.replicaId, senderReplicaId, paxosId, this.replica.paxosEntries.get(paxosId).valueWritten);
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId, senderReplicaId, paxosId, this.replica.paxosEntries.get(paxosId).logEnrties);
 					this.replica.logger.write("Responded to  AckToPrepare Msg with Decide Msg for Paxos Instance: " + String.valueOf(paxosId) );
 				}
 				else {
@@ -104,7 +104,7 @@ public class ServerMessageHandler extends Thread {
 			}
 			else {
 				if(paxosId < numEntries - 1) {
-					MessageCommunication.sendDecideUnicast(this.replica.replicaId, senderReplicaId, paxosId, this.replica.paxosEntries.get(paxosId).valueWritten);
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId, senderReplicaId, paxosId, this.replica.paxosEntries.get(paxosId).logEnrties);
 					this.replica.logger.write("Responded to  NAckToPrepare Msg with Decide Msg for Paxos Instance: " + String.valueOf(paxosId) );
 				}
 				else {
@@ -130,32 +130,38 @@ public class ServerMessageHandler extends Thread {
 					currentPaxos.onreceiveAccept(acceptBallotNumPair,messageParts[5]);
 				}
 				else {
-					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+					MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.logEnrties);
 				}
 			}
 			else {
 				//already decided
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
-				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.valueWritten);
+				MessageCommunication.sendDecideUnicast(this.replica.replicaId,senderReplicaId, paxosId, currentPaxos.logEnrties);
 			}
 			break;
 		case 5:
 			//onreceiveDecide
 			String value = messageParts[3];
+			ArrayList<String> Parts = new ArrayList<String>();
+	    	String [] tempArray = value.split(":");
+	    	for(String x: tempArray) {
+	    		Parts.add(x);
+	    	}
 			if(paxosId < numEntries - 1) {
 				//Redundant check
-			    if(!this.replica.paxosEntries.get(paxosId).isDecided) {
 			    	currentPaxos = this.replica.paxosEntries.get(paxosId);
-			    	currentPaxos.onreceiveDecide(value);
-			    }
+			    	currentPaxos.onreceiveDecide(Parts);
 			}
 			else if( paxosId == numEntries - 1) {
 				//check if it is active or not
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
 				//active and join it - else already decided and send decide
+				/**
 				if(!currentPaxos.isDecided) {
 					currentPaxos.onreceiveDecide(value);
 				}
+				*/
+				currentPaxos.onreceiveDecide(Parts);
 			}
 			else {
 				//future stuff in which I did not participate because I was down
@@ -164,20 +170,21 @@ public class ServerMessageHandler extends Thread {
 			break;
 		case 6:
 			String value1 = messageParts[3];
+			ArrayList<String> Parts1 = new ArrayList<String>();
+	    	String [] tempArray1 = value1.split(":");
+	    	for(String x: tempArray1) {
+	    		Parts1.add(x);
+	    	}
 			if(paxosId < numEntries - 1) {
 				//Redundant check
-			    if(!this.replica.paxosEntries.get(paxosId).isDecided) {
 			    	currentPaxos = this.replica.paxosEntries.get(paxosId);
-			    	currentPaxos.onreceiveDecide(value1);
-			    }
+			    	currentPaxos.onreceiveDecide(Parts1);
 			}
 			else if( paxosId == numEntries - 1) {
 				//check if it is active or not
 				currentPaxos = this.replica.paxosEntries.get(numEntries - 1);
 				//active and join it - else already decided and send decide
-				if(!currentPaxos.isDecided) {
-					currentPaxos.onreceiveDecide(value1);
-				}
+					currentPaxos.onreceiveDecide(Parts1);
 			}
 			else {
 				//future stuff in which I did not participate because I was down
@@ -190,6 +197,7 @@ public class ServerMessageHandler extends Thread {
 			int highestindex = paxosId;
 			int recoverNodeId = senderReplicaId;
 			int num = 0;
+			if(numEntries >= 1) {
 			if(this.replica.paxosEntries.get(numEntries -1).isDecided) {
 				num = numEntries - 1;
 			}
@@ -199,14 +207,22 @@ public class ServerMessageHandler extends Thread {
 			if(highestindex <= num ) {
 				//sendUpdate or everythinguptodate
 				ArrayList<String> newValues = new ArrayList<String>();
+				
 				for(int i=highestindex +1;i<=num;i++) {
-					newValues.add(this.replica.paxosEntries.get(i).valueWritten);
+					StringBuilder message = new StringBuilder();
+					ArrayList<String> entry = this.replica.paxosEntries.get(i).logEnrties;
+					for(String x : entry) {
+						message.append(x+":");
+					}
+					newValues.add(message.subSequence(0, message.length()-1).toString());
+					//newValues.add(this.replica.paxosEntries.get(i).valueWritten);
 				}
 				MessageCommunication.replyOnRecover(this.replica.replicaId,recoverNodeId,newValues);
 			}
 			else 
 			{
 				this.replica.logger.write("RECOVERING NODE KNOWS MUCH MORE THAN ME :(");
+			}
 			}
 			break;
 		case 8 :
@@ -217,20 +233,33 @@ public class ServerMessageHandler extends Thread {
 				int messageSize = paxosId;
 				int numberOfEntries = replica.paxosEntries.size()-1;
 				int highestDecidedIndex = 0 ;
+				if(numberOfEntries >= 0) {
 				if(replica.paxosEntries.get(numberOfEntries).isDecided)
 				{
 					highestDecidedIndex = numberOfEntries;
 				}
 				else
 				{
+					this.replica.logger.write("This would never happen.");
 					replica.paxosEntries.remove(numberOfEntries);
 					highestDecidedIndex = numberOfEntries-1;
 				}
+				}
+				else
+					highestDecidedIndex = -1;
+				
 				synchronized(this.replica.paxosEntries){
 					System.out.println("Message Size = " + messageSize);
 					for(int i = 0; i<messageSize;i++) {
 						System.out.println("Message Size = " + messageSize + "Message" + messageParts[3+i]);
-						this.replica.paxosEntries.add(new Paxos(highestDecidedIndex+i+1,this.replica.replicaId,messageParts[3+i]));
+						String str = messageParts[3 + i];
+						ArrayList<String> Parts2 = new ArrayList<String>();
+				    	String [] tempArray2 = str.split(":");
+				    	for(String x: tempArray2) {
+				    		Parts2.add(x);
+				    	}
+						
+						this.replica.paxosEntries.add(new Paxos(highestDecidedIndex+i+1,this.replica.replicaId,Parts2));
 					}
 				}
 				replica.isRecovered = true;
