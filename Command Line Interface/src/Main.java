@@ -6,10 +6,14 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		int serverPortNumber = 5002;
-		String serverAddress = "127.0.0.1";
-		int clientPortNumber = 6002;
-		String clientAddress = "127.0.0.1";
+		for(String arg : args)
+		{
+			System.out.println(arg);
+		}
+		int serverPortNumber = Integer.parseInt(args[0]);
+		String serverAddress = args[1];
+		int clientPortNumber = Integer.parseInt(args[2]);
+		String clientAddress = args[3];
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(
 					System.in));
