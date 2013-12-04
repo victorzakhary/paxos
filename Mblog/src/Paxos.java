@@ -49,13 +49,13 @@ public class Paxos {
 		
 	}
 	
-	public Paxos (int id, int replicaid, String write_recover)
+	public Paxos (int id, int replicaid, ArrayList<String> write_recover)
 	{
 		this.id = id;
 		this.replicaId = replicaid;
 		this.isDecided = true;
 		this.proposer = false;
-		this.valueWritten = write_recover;	
+		this.logEnrties = write_recover;	
 	}
 	
 	public void iamProposer() {
@@ -100,7 +100,7 @@ public class Paxos {
 					MessageCommunication.sendPrepareMsg(this.replicaId, this.id, this.proposeBallotNumPair);
 					this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT PREPARE BALLOTNUMBER" + this.proposeBallotNumPair.toString());
 					//Waiting for people to respond within 150 milliseconds otherwise - Increase BallotNumber and Propose again.
-					Thread.sleep(1000);
+					Thread.sleep(15000);
 				}
 				catch(InterruptedException e) {
 					e.printStackTrace();
@@ -124,7 +124,7 @@ public class Paxos {
 					MessageCommunication.sendPrepareMsg(this.replicaId, this.id, this.proposeBallotNumPair);
 					this.logger.write("PaxosID:" + String.valueOf(this.id) + " SENT PREPARE BALLOTNUMBER" + this.proposeBallotNumPair.toString());
 					//Waiting for people to respond within 150 milliseconds otherwise - Increase BallotNumber and Propose again. - Ask_Victor
-					Thread.sleep(1000);
+					Thread.sleep(15000);
 				}
 				catch(InterruptedException e) {
 					e.printStackTrace();
@@ -145,6 +145,11 @@ public class Paxos {
 	public synchronized void onreceivePrepare(BallotPair proposedBallotNumPair, int proposalReplicaId) {		
 		this.logger.write("PaxosID:" + String.valueOf(this.id) + " RECEIVED PREPARE MSG WITH BALLOTNUMBER " + proposedBallotNumPair.toString());
 		//send Ack
+		try{
+		Thread.sleep(10000);
+		}
+		catch(Exception e) {
+		}
 		if(proposedBallotNumPair.compareTo(this.ownBallotNumPair) >= 0) {
 			this.ownBallotNumPair = proposedBallotNumPair;
 			MessageCommunication.sendAckToPrepare(this.replicaId, proposalReplicaId, this.id, this.ownBallotNumPair, this.acceptedBallotNumPair, this.acceptedValue);
@@ -241,7 +246,7 @@ public class Paxos {
 
 			}
 			//added this code for having to recent more accept messages than n - t
-			if(this.acceptedCounter < numTotalServers - this.acceptableFailures) {
+
 				this.acceptedCounter = this.acceptedCounter + 1;
 				if(this.acceptedCounter >= numTotalServers - this.acceptableFailures) {
 					this.logger.write("PaxosID:" + this.id + "RECVD ACCEPT MSG FROM ALL - ACCEPTABLE FAILURES WITH VALUE " + value);
@@ -255,7 +260,6 @@ public class Paxos {
 					}
 					MessageCommunication.sendDecide(this.replicaId,this.id,Values.subSequence(0, Values.length()-1).toString()); //broadcast it to all
 				}
-			}
 		}
 	}
 	
@@ -265,6 +269,7 @@ public class Paxos {
 	public synchronized void onreceiveDecide(ArrayList<String> valueList) {
 		//received decide message for the first time
 		if(this.logEnrties.size() == 0 ) {
+		
 			this.logEnrties = valueList;
 		}
 		else {

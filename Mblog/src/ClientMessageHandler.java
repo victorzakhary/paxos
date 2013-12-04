@@ -69,39 +69,43 @@ public class ClientMessageHandler extends Thread {
 					|| (this.replica.paxosEntries.get(numEntries - 1)).isDecided){
 				this.replica.paxosEntries.add(new Paxos(numEntries,this.replica.replicaId,valueToPost,this.replica.logger));
 				testPaxos = this.replica.paxosEntries.get(numEntries);
+				
+				//set this.proposer = true; iamProposer()
+			    testPaxos.iamProposer();
+			    System.out.println("Send prepare is called");
+			    testPaxos.sendPrepare();
+			    
+			    /*while (!testPaxos.isDecided)
+			    {
+			    	System.out.println("Value is not decided");
+			    	try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			    }*/
+			    if(testPaxos.isDecided && testPaxos.logEnrties.contains(valueToPost))
+			    {
+			    	replyToClient(currentMessage, "SUCCESS");
+			    }
+			    else
+			    {
+			    	if(!testPaxos.isDecided)
+			    	{
+			    		replica.paxosEntries.remove(testPaxos);
+			    	}
+			    	replyToClient(currentMessage, "FAIL");
+			    }
 			}
 			else {
 				testPaxos = this.replica.paxosEntries.get(numEntries -1);
+				testPaxos.logEnrties.add(valueToPost);
+				replyToClient(currentMessage, "SUCCESS");
 			}
 			
 		    
-			//set this.proposer = true; iamProposer()
-		    testPaxos.iamProposer();
-		    System.out.println("Send prepare is called");
-		    testPaxos.sendPrepare();
-		    
-		    /*while (!testPaxos.isDecided)
-		    {
-		    	System.out.println("Value is not decided");
-		    	try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		    }*/
-		    if(testPaxos.isDecided && testPaxos.valueWritten.equals(valueToPost))
-		    {
-		    	replyToClient(currentMessage, "SUCCESS");
-		    }
-		    else
-		    {
-		    	if(!testPaxos.isDecided)
-		    	{
-		    		replica.paxosEntries.remove(testPaxos);
-		    	}
-		    	replyToClient(currentMessage, "FAIL");
-		    }
+			
 			break;
 		case "read":
 			String logEntries = getLog();
@@ -116,14 +120,29 @@ public class ClientMessageHandler extends Thread {
 			replica.isRecovered = false;
 			int numberOfEntries = replica.paxosEntries.size()-1;
 			int highestDecidedIndex = 0 ;
-			if(replica.paxosEntries.get(numberOfEntries).isDecided)
-			{
-				highestDecidedIndex = numberOfEntries;
+			if(numberOfEntries == -1) {
+				highestDecidedIndex = -1;
 			}
-			else
-			{
-				highestDecidedIndex = numberOfEntries-1;
-
+			if(numberOfEntries >= 0){
+				if(replica.paxosEntries.get(numberOfEntries).isDecided)
+				{
+					highestDecidedIndex = numberOfEntries - 1;
+					replica.paxosEntries.remove(numberOfEntries);
+				}
+				else
+				{
+					//remove entries
+					
+				    if(numberOfEntries == 0) {
+				    	highestDecidedIndex = numberOfEntries-1;
+				    	replica.paxosEntries.remove(0);
+				    }
+				    else {
+				    	replica.paxosEntries.remove(numberOfEntries);
+				    	replica.paxosEntries.remove(numberOfEntries - 1);
+				    	highestDecidedIndex = numberOfEntries - 2;
+				    }
+				}
 			}
 			MessageCommunication.sendRecover(this.replica.replicaId, highestDecidedIndex);
 			while(!replica.isRecovered)
@@ -156,8 +175,10 @@ public class ClientMessageHandler extends Thread {
 	public String getLog() {
 		StringBuilder logEntries = new StringBuilder();
 		for(Paxos paxos : this.replica.paxosEntries) {
-			if(paxos.isDecided) 
-				logEntries.append(paxos.valueWritten + "\n");
+			if(paxos.isDecided) {
+				for(String x: paxos.logEnrties)
+				logEntries.append(x + "\n");
+			}
 
 		}
 		return logEntries.toString();

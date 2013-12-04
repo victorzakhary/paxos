@@ -68,7 +68,9 @@ public class MessageCommunication {
 		broadCast(message.getMessage());
 	}
 	// Decide message type = 6
-	public static void sendDecideUnicast(int replicaId,int proposerReplicaId, int paxosId, ArrayList<String> ArrayValues) {
+
+	public static void sendDecideUnicast(int replicaId, int proposerReplicaId,
+			int paxosId, ArrayList<String> ArrayValues) {
 		InterServerMessage message = new InterServerMessage();
 		message.add("6");
 		message.add(Integer.toString(replicaId));
@@ -80,7 +82,9 @@ public class MessageCommunication {
 		}
 		message.add(Values.subSequence(0, Values.length()-1).toString());
 		unicastToServer(message.getMessage(),proposerReplicaId);
+		
 	}
+
 	
 	public static void sendRecover(int replicaId,int highestDecidedIndex) {
 		InterServerMessage message = new InterServerMessage();
@@ -139,5 +143,8 @@ public class MessageCommunication {
 		}
 
 	}
+
+
+
 
 }
